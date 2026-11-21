@@ -1,0 +1,52 @@
+/* Luis Montañez Escobar */
+/* Capa de lectura: no modifica la composición de los escritos del editor. */
+main :is(p,blockquote,dd,li,.appeals-text,.documentary-text,.authority-transcription,pre):not(:where(#draft-rich *,#draft-rich,#draft-body,.eyebrow,.report-kicker,.analysis-kicker,.appeals-source,.documentary-source,.approved-eyebrow,.source-short,.tag,.priority-label,.authority-legend li,.reading-key li,nav *,[role="tablist"] *,[role="status"],.general-table *,.mini-table *,.atlas-images li)){
+ text-align:justify;text-justify:inter-word;text-align-last:start;hyphens:auto;overflow-wrap:break-word;
+}
+main :is(h1,h2,h3,h4,h5,h6,summary,nav,button,label,input,select,textarea,th,td,figcaption,[role="tablist"],.authority-legend,.reading-key){text-align:start}
+main :is(.appeals-text,.documentary-text,.authority-transcription,.analysis-reading,.observation-module-body pre){line-height:1.85}
+main :is(.appeals-detail,.observation-module-body,.documentary-detail,.criteria-detail,.library-reading) :is(h3,h4){line-height:1.5;margin-block:1.4rem .75rem}
+/* Referencias existentes: conservar colores y estados de su valoración. */
+main .authority-reference{border-bottom:0;text-decoration-line:underline;text-decoration-thickness:2px;text-underline-offset:.22em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+main .semantic-icon{width:1.2em;height:1.2em;min-width:1.2em;vertical-align:-.18em}
+main :is(.documentary-normative-link,.foundation-source-link){text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.22em;font-weight:650;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+main :is(.documentary-normative-link,.foundation-source-link)::after{content:'↗';display:inline-block;margin-inline-start:.22em;font-size:.8em;text-decoration:none}
+main .motivation-finding{border-bottom:2px solid #996500;background:#fff2bd;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.reading-key{display:flex;flex-wrap:wrap;gap:.65rem 1.4rem;list-style:none;margin:0 0 1.1rem;padding:.85rem 1rem;background:#faf7f8;border:1px solid #e6dfe3;border-radius:8px;color:#5d4c54;font-size:.8rem;line-height:1.6}
+.reading-key li{display:flex;align-items:center;gap:.5rem;min-width:0}
+.reading-key svg{width:20px;height:20px;flex:0 0 20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.reading-key .reading-key-note{flex-basis:100%;font-size:.75rem;color:#6a5e64}
+/* Pictogramas de función, siempre acompañados por el título escrito. */
+:root{--reading-authority:url("/atlas/maqueta-organizacion/lectura-autoridad.svg");--reading-response:url("/atlas/maqueta-organizacion/lectura-respuesta.svg");--reading-analysis:url("/atlas/maqueta-organizacion/lectura-analisis.svg")}
+:is(#texto-2v>h3,#observacion-ine h2,.documentary-voice-heading,.appeals-foundation>details>summary,.analysis-reading>h3,.analysis-after-response>h2,#respuesta-1v>h3,#respuesta-2v>h3,#fondo-respuesta h2)::before{content:'';display:inline-block;vertical-align:-.2em;width:1.15em;height:1.15em;margin-inline-end:.5em;background:currentColor;mask:var(--reading-authority) center/contain no-repeat;-webkit-mask:var(--reading-authority) center/contain no-repeat}
+:is(.documentary-voice--party>.documentary-voice-heading,#respuesta-1v>h3,#respuesta-2v>h3,#fondo-respuesta h2)::before{mask-image:var(--reading-response);-webkit-mask-image:var(--reading-response)}
+:is(.appeals-foundation>details>summary,.analysis-reading>h3,.analysis-after-response>h2)::before{mask-image:var(--reading-analysis);-webkit-mask-image:var(--reading-analysis)}
+:is(.appeals-foundation>details>summary,.analysis-reading>h3,.analysis-after-response>h2){text-decoration:underline;text-decoration-color:#cba7b5;text-decoration-thickness:2px;text-underline-offset:.3em}
+@media(max-width:600px){.reading-key{gap:.6rem 1rem;padding:.8rem}.reading-key li{max-width:100%}main :is(.appeals-text,.documentary-text,.authority-transcription){word-spacing:normal}}
+@media print{.reading-key,main .authority-reference,main .motivation-finding{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+.appeals-foundation :is(h3,h4){text-decoration:underline;text-decoration-color:#cba7b5;text-decoration-thickness:2px;text-underline-offset:.3em}
+.appeals-foundation :is(h3,h4)::before{content:'';display:inline-block;vertical-align:-.2em;width:1.15em;height:1.15em;margin-inline-end:.5em;background:currentColor;mask:var(--reading-analysis) center/contain no-repeat;-webkit-mask:var(--reading-analysis) center/contain no-repeat}
+/* Paleta institucional también para enlaces visitados y marcas de lectura. */
+body a,body a:visited{color:#6e1730!important}
+body a:hover,body a:focus-visible{color:#8a671f!important}
+:is(.continue-card,.continue-card a,.approved-metric--accent,.approved-module-nav a[aria-current],.institutional-header,.report-header,.atlas-topbar) a,
+a:is(.approved-button:not(.approved-button--secondary),.report-primary-action,.djf-button:not(.djf-button--light),.btn:not(.secondary),.pe27-button:not(.pe27-button--secondary)){color:#e4c47e!important}
+main .authority-reference--correct,main .authority-reference--incorrect,main .authority-legend__item--correct,main .authority-legend__item--incorrect{color:#6e1730;background:#f5e8ee}
+main .authority-reference--requires-precision,main .authority-legend__item--requires-precision{color:#806018;background:#fbf2df}
+main .authority-reference--pending,main .authority-legend__item--pending{color:#735b65;background:#f3edf0}
+main .authority-reference--requires-precision{color:#806018!important}
+.bank-admin-options{font-size:.75rem;flex-basis:100%;margin:.5rem 0}
+.bank-admin-options>summary{color:#6e1730;cursor:pointer;text-decoration:underline;text-underline-offset:.2em;padding:.5rem 0}
+.bank-admin-options>div{padding:.5rem 0;display:flex;gap:.75rem;flex-wrap:wrap}
+body :is(.djf-status[data-status=completada],.electoral-status,.electoral-status--approved,.agenda-key--electoral,.agenda-panel--unified .agenda-day-event--electoral,.priority-banner--low,.report-status--accepted,.report-status--corrected,.report-status--active,.success,.round-pair--new .round-pair__bridge,.priority-label--sin_senal),
+#private-review-panel .pr-badge:is([data-status=approved],[data-status=implemented]){color:#6e1730!important;background:#f5e8ee!important;border-color:#d8b8c5!important}
+body .agenda-panel--unified .agenda-day-event--electoral .agenda-event-dot{background:#6e1730!important}
+body .agenda-list-event--electoral{box-shadow:inset 4px 0 #b08a44}
+
+/* Luis Montañez Escobar. Referencia corroborada: verde, sin calificar su aplicación. */
+body main :is(.authority-reference--correct,.authority-legend__item--correct),
+body main a.authority-reference--correct:is(:link,:visited,:hover,:focus,:focus-visible,:active){color:#166534!important;background-color:#eaf5ec!important;border-color:#97bc9c!important}
+body main .semantic-icon--correct{color:#166534!important;stroke:currentColor!important}
+body:is(.dark,[data-accessibility-theme="oscuro"]) main :is(.authority-reference--correct,.authority-legend__item--correct),
+body:is(.dark,[data-accessibility-theme="oscuro"]) main a.authority-reference--correct:is(:link,:visited,:hover,:focus,:focus-visible,:active){color:#b7e8c5!important;background-color:#173c2b!important;border-color:#6fa482!important}
+body:is(.dark,[data-accessibility-theme="oscuro"]) main .semantic-icon--correct{color:#b7e8c5!important;stroke:currentColor!important}

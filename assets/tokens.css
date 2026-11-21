@@ -1,0 +1,53 @@
+@font-face {
+  font-family: "Montserrat";
+  src: url("./montserrat-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./montserrat-semibold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./montserrat-bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --guinda-950: #3f0719;
+  --guinda-900: #571126;
+  --guinda-800: #701d35;
+  --guinda-700: #8b2544;
+  --guinda-100: #f5e6eb;
+  --guinda-050: #fbf5f7;
+  --oro-500: #b08a44;
+  --oro-200: #e8d6ac;
+  --tinta-950: #211d20;
+  --tinta-700: #514a4e;
+  --tinta-500: #756d71;
+  --papel: #f4f1ed;
+  --blanco: #fffdfa;
+  --linea: #ddd7d7;
+  --error: #8c1e29;
+  --focus: #e7b85a;
+  --font-sans: "Montserrat", "Avenir Next", "Helvetica Neue", sans-serif;
+  --shadow-card: 0 28px 70px rgb(55 20 31 / 14%);
+  --radius-sm: 0.45rem;
+  --radius-md: 0.8rem;
+  --space-1: 0.35rem;
+  --space-2: 0.6rem;
+  --space-3: 0.9rem;
+  --space-4: 1.25rem;
+  --space-5: 1.8rem;
+  --space-6: 2.5rem;
+  --space-7: 3.5rem;
+}
