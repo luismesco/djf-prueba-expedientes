@@ -29,7 +29,7 @@
   const dialog=document.createElement('dialog');
   dialog.className='djf-tools-dialog';
   dialog.setAttribute('aria-labelledby','djf-tools-title');
-  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-ai djf-tools-grid"></div><details class="djf-tools-list"><summary>Consultas y utilidades</summary><div class="djf-tools-grid"></div></details><section class="djf-tool-pane" hidden></section>';
+  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-ai djf-tools-grid"></div><details class="djf-tools-list"><summary>Recursos</summary><div class="djf-tools-grid djf-resource-grid"></div><div class="djf-tools-extra"><h3>Utilidades de trabajo</h3><div class="djf-tools-grid"></div></div></details><section class="djf-tool-pane" hidden></section>';
   const launch=document.createElement('button');
   launch.type='button';
   launch.className='djf-tools-launch';
@@ -40,7 +40,10 @@
   const recommended=related.querySelector('.djf-tools-grid');
   const ai=dialog.querySelector('.djf-tools-ai');
   const list=dialog.querySelector('.djf-tools-list');
-  const grid=list.querySelector('.djf-tools-grid');
+  const resources=list.querySelector('.djf-resource-grid');
+  const extras=list.querySelector('.djf-tools-extra');
+  const grid=extras.querySelector('.djf-tools-grid');
+  const resourceKeys=['normas','jurisprudencia','fuentes'];
   const toolButtons=new Map();
   const contextByTopic={
     defensa:['jurisprudencia','pruebas','plazos'],
@@ -115,9 +118,15 @@
     dialog.querySelector('.djf-tool-state').textContent=parts.join(' · ')||'Expedientes DJF';
     const phases=Object.hasOwn(contextByPhase,context.topic)?contextByPhase[context.topic]:{};
     const preferred=Object.hasOwn(phases,context.phaseKey)?phases[context.phaseKey]:
-      Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:['jurisprudencia','normas','fuentes'];
-    const keys=preferred.slice(0,3);
-    for(const [key,button] of toolButtons)if(!keys.includes(key))grid.append(button);
+      Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:['plazos','comparar','pruebas'];
+    const keys=preferred.filter(key=>!resourceKeys.includes(key)).slice(0,3);
+    for(const key of new Set([...preferred.filter(key=>resourceKeys.includes(key)),...resourceKeys])){
+      resources.append(toolButtons.get(key));
+    }
+    for(const [key,button] of toolButtons){
+      if(!keys.includes(key)&&!resourceKeys.includes(key))grid.append(button);
+    }
+    extras.hidden=!grid.children.length;
     for(const key of keys)recommended.append(toolButtons.get(key));
     related.hidden=!keys.length||!pane.hidden;
   }
@@ -170,7 +179,7 @@
     pane.hidden=true;
     pane.replaceChildren();
     refreshContext();
-    (related.hidden?grid:recommended).querySelector('button')?.focus();
+    (related.hidden?ai:recommended).querySelector('button')?.focus();
   }
   function open(key,name){
     related.hidden=true;

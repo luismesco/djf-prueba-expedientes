@@ -202,6 +202,14 @@
   margin-top: .35rem;
 }
 
+.djf-tools-extra {
+  margin-top: .55rem;
+}
+
+.djf-tools-extra h3 {
+  font-size: .82rem;
+}
+
 .djf-tools-list summary {
   align-content: center;
   min-height: 44px;
