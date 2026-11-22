@@ -19,6 +19,7 @@
       const previous = cards.get(active)?.querySelector('a[data-topic]');
       active = '';
       currentSrc = '';
+      document.dispatchEvent(new CustomEvent('djf:tool-context',{detail:{topic:'',phase:''}}));
       panel.hidden = true;
       access.hidden = false;
       frame.removeAttribute('src');
@@ -38,6 +39,7 @@
     panel.hidden = false;
     if (target.href !== currentSrc) {
       currentSrc = target.href;
+      document.dispatchEvent(new CustomEvent('djf:tool-context',{detail:{topic:target.searchParams.get('tema'),phase:''}}));
       frame.style.height = '320px';
       loading.hidden = false;
       frame.src = currentSrc;
@@ -68,7 +70,7 @@
   });
   frame.addEventListener('load',()=>{if(active)loading.hidden=true;});
   window.addEventListener('message',event=>{
-    if(!active||event.source!==frame.contentWindow||event.origin!==location.origin)return;
+    if(!active||event.source!==frame.contentWindow||event.origin!==(location.protocol==='file:'?'null':location.origin))return;
     if(event.data?.type!=='djf-section-height'||!Number.isFinite(event.data.height))return;
     frame.style.height=Math.max(320,Math.min(20000,event.data.height+4))+'px';
     loading.hidden=true;

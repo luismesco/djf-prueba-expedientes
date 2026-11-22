@@ -9,6 +9,8 @@
     comparar:'M4 4h6v16H4z M14 4h6v16h-6z M7 9h1m-1 4h1m9-4h1m-1 4h1',
     pruebas:'M5 4h14v16H5z M8 8h8m-8 4h8m-8 4h8m-5-8v8',
     plazos:'M6 5h12v16H6z M9 3v4m6-4v4M6 10h12 M12 12v4l2 1',
+    jurisprudencia:'M15 15l4 4m-9-3a6 6 0 1 1 0-12 6 6 0 0 1 0 12z',
+    fuentes:'M4 5h10l4 4v11H4zM14 5v4h4M8 12h6m-6 4h6',
     normas:'M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zm0 0v14',
   };
   const icon=key=>'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="'+iconPaths[key]+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -19,19 +21,74 @@
     ['comparar','Comparar versiones','Identificar diferencias entre dos textos'],
     ['pruebas','Matriz probatoria','Cruzar hechos, documentos y localizadores'],
     ['plazos','Notificaciones y plazos','Abrir seguimiento de la entidad'],
-    ['normas','Fuentes y formatos','Acervo, normativa, SIF y formatos DJF'],
+    ['jurisprudencia','Sentencias y jurisprudencia','Índices y expedientes del acervo por entidad'],
+    ['normas','Normativa y OPLE','Legislación local, acuerdos, estrados y planes'],
+    ['fuentes','Fuentes oficiales y formatos','Publicaciones del apartado y formatos DJF'],
   ];
   const dialog=document.createElement('dialog');
   dialog.className='djf-tools-dialog';
   dialog.setAttribute('aria-labelledby','djf-tools-title');
-  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas de trabajo</h2><button type="button" data-close aria-label="Cerrar herramientas">Cerrar</button></div><p class="djf-tool-state"></p><div class="djf-tools-grid"></div><section class="djf-tool-pane" hidden></section>';
+  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas de trabajo</h2><button type="button" data-close aria-label="Cerrar herramientas">Cerrar</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-list"><div class="djf-tools-grid"></div></div><section class="djf-tool-pane" hidden></section>';
   const launch=document.createElement('button');
   launch.type='button';
   launch.className='djf-tools-launch';
   launch.setAttribute('aria-haspopup','dialog');
   launch.innerHTML=icon('toolbox')+'<span>Herramientas</span>';
   document.body.append(launch,dialog);
-  const grid=dialog.querySelector('.djf-tools-grid');
+  const related=dialog.querySelector('.djf-tools-context');
+  const recommended=related.querySelector('.djf-tools-grid');
+  const list=dialog.querySelector('.djf-tools-list');
+  const grid=list.querySelector('.djf-tools-grid');
+  const toolButtons=new Map();
+  const contextByTopic={
+    defensa:['jurisprudencia','pruebas','plazos'],
+    sancionadores:['plazos','pruebas','jurisprudencia'],
+    anual:['comparar','pruebas','fuentes'],
+    fiscalizacion:['comparar','normas','fuentes'],
+    oficios:['fuentes','comparar','pruebas','plazos'],
+    organizacion:['normas','fuentes'],
+    extraordinaria:['normas','fuentes'],
+    judicial:['normas','jurisprudencia','fuentes'],
+    participacion:['normas','fuentes'],
+    partido:['normas','oficio','fuentes'],
+    dictamen:['jurisprudencia','comparar','pruebas'],
+  };
+  const contextByPhase={
+    anual:{
+      informe:['comparar','pruebas','fuentes'],
+      primera:['comparar','pruebas','plazos'],
+      segunda:['comparar','pruebas','plazos'],
+      dictamen:['comparar','jurisprudencia','pruebas'],
+      defensa:['jurisprudencia','pruebas','plazos'],
+    },
+    fiscalizacion:{
+      preparacion:['normas','fuentes'],
+      precampana:['normas','pruebas','fuentes'],
+      campana:['normas','comparar','fuentes'],
+      revision:['comparar','pruebas','plazos'],
+      dictamen:['jurisprudencia','comparar','pruebas'],
+      defensa:['jurisprudencia','pruebas','plazos'],
+    },
+    organizacion:{
+      registro:['normas','fuentes','pruebas'],
+      jornada:['pruebas','fuentes'],
+      computos:['fuentes','normas','pruebas'],
+      cierre:['jurisprudencia','fuentes','plazos'],
+    },
+    defensa:{
+      acto:['plazos','jurisprudencia','pruebas'],
+      promocion:['jurisprudencia','pruebas','oficio'],
+      sentencia:['jurisprudencia','comparar','pruebas'],
+      cumplimiento:['jurisprudencia','pruebas','plazos'],
+    },
+    sancionadores:{
+      emplazamiento:['plazos','pruebas','oficio'],
+      instruccion:['pruebas','audio','jurisprudencia'],
+      resolucion:['jurisprudencia','comparar','plazos'],
+    },
+  };
+  let context={topic:'',phase:''};
+  let referenceFrame=null;
   const pane=dialog.querySelector('.djf-tool-pane');
   const state=()=>new URLSearchParams(location.search).get('entidad')||'';
   const legalUrl=kind=>djfUrl('index',{entidad:state(),seccion:state()?kind:null});
@@ -48,6 +105,39 @@
     if(text)node.textContent=text;
     return node;
   };
+  function refreshContext(){
+    const sectionTitle=context.title||document.querySelector('#work-section:not([hidden]) #work-section-title')?.textContent
+      || (context.topic?document.querySelector('.bloque:not([hidden])>h2')?.textContent:'');
+    const entity=(document.getElementById('demo-entity')??document.getElementById('fNombre'))?.textContent;
+    const parts=[entity,sectionTitle,context.phase].filter(Boolean);
+    dialog.querySelector('.djf-tool-state').textContent=parts.join(' · ')||'Expedientes DJF';
+    const phases=Object.hasOwn(contextByPhase,context.topic)?contextByPhase[context.topic]:{};
+    const keys=Object.hasOwn(phases,context.phaseKey)?phases[context.phaseKey]:
+      Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:[];
+    for(const [key,button] of toolButtons)if(!keys.includes(key))grid.append(button);
+    for(const key of keys)recommended.append(toolButtons.get(key));
+    related.hidden=!keys.length||!pane.hidden;
+  }
+  function updateContext(detail){
+    if(typeof detail?.topic!=='string'||typeof detail.phase!=='string')return;
+    context={
+      topic:detail.topic,phase:detail.phase,
+      phaseKey:typeof detail.phaseKey==='string'?detail.phaseKey:'',
+      title:typeof detail.title==='string'?detail.title:'',
+    };
+    refreshContext();
+  }
+  function mountReference(topic){
+    referenceFrame=el('iframe');
+    referenceFrame.className='djf-tool-reference';
+    referenceFrame.title=topic==='exp'?'Sentencias y jurisprudencia de la entidad':'Consulta documental de la entidad';
+    referenceFrame.src=djfUrl('consulta',{entidad:state(),tema:topic,panel:'1',herramienta:'1'});
+    pane.querySelector('.djf-reference-content')?.remove();
+    const target=el('div');
+    target.className='djf-reference-content';
+    target.append(referenceFrame);
+    pane.append(target);
+  }
   const forms={
     audio:'<p>Usa un audio de prueba. El archivo se reproduce en este navegador y puedes editar la transcripción con marcas de tiempo.</p><div class="djf-tool-form"><label>Audio de prueba<input type="file" accept="audio/*"></label><audio controls preload="metadata" hidden></audio><label>Transcripción<textarea rows="6"></textarea></label></div>',
     oficio:'<p>Prepara un borrador de muestra y verifica el contenido antes de usar un formato institucional.</p><form class="djf-tool-form"><label>Lugar y fecha<input name="fecha" required></label><label>Destinatario y cargo<input name="destino" required></label><label>Asunto<input name="asunto" required></label><label>Referencia o expediente<input name="referencia"></label><label>Texto del oficio<textarea name="cuerpo" rows="4" required></textarea></label><label>Nombre y cargo de quien suscribe<input name="firma" required></label><button type="submit">Generar borrador</button><label>Borrador editable<textarea name="borrador" rows="8"></textarea></label></form>',
@@ -71,26 +161,53 @@
   }
   function back(){
     releaseAudio();
-    grid.hidden=false;
+    referenceFrame=null;
+    list.hidden=false;
     pane.hidden=true;
     pane.replaceChildren();
-    grid.querySelector('button')?.focus();
+    refreshContext();
+    (related.hidden?grid:recommended).querySelector('button')?.focus();
   }
   function open(key,name){
-    grid.hidden=true;
+    related.hidden=true;
+    list.hidden=true;
     pane.hidden=false;
     const title=el('h3',name);
     title.tabIndex=-1;
     pane.replaceChildren(control('Volver a herramientas',back),title);
     if(key==='morenai')pane.append(el('p','Abre MorenAI en el sistema DJF con tu sesión. Desde ahí puedes consultar normativa, criterios y sentencias.'),action('Abrir MorenAI',djf+'/atlas/sentencias'));
     if(key==='plazos')pane.append(el('p',state()?'Abrir el seguimiento de la entidad seleccionada.':'Elige una entidad en Expedientes para abrir su bandeja.'),action('Notificaciones',legalUrl('sancionadores'),false),action('Calendario de vencimientos',legalUrl('calendario'),false));
-    if(key==='normas')pane.append(
-      action('Repositorio Documental del INE','https://repositoriodocumental.ine.mx/'),
-      action('Consulta legislativa del TEPJF','https://www.te.gob.mx/legislacion/'),
-      action('Sistemas de fiscalización y notificaciones','https://ine.mx/sistemas-de-fiscalizacion/'),
-      action('Banco de formatos DJF',djf+'/atlas/banco-formatos'),
-      action('Catálogo de procesos',legalUrl('catalogo'),false),
-    );
+    if(key==='jurisprudencia'){
+      if(state())mountReference('exp');
+      else pane.append(el('p','Selecciona una entidad para abrir los índices y expedientes del acervo.'));
+      pane.append(action('Consultar TEPJF','https://www.te.gob.mx/'),action('Consultar MorenAI',djf+'/atlas/sentencias'));
+    }
+    if(key==='normas'){
+      if(state()){
+        const tabs=el('div');tabs.className='djf-tool-actions';
+        const scopes=[['Normatividad local','norm'],['OPLE y estrados','ople'],['Planes electorales','planes']];
+        for(const [label,topic] of scopes)tabs.append(control(label,()=>mountReference(topic)));
+        pane.append(tabs);
+        mountReference('norm');
+      } else pane.append(el('p','Elige una entidad para consultar su marco electoral y sus publicaciones.'));
+      pane.append(action('Consulta legislativa del TEPJF','https://www.te.gob.mx/legislacion/'));
+    }
+    if(key==='fuentes'){
+      const topic=context.topic==='oficios'
+        ? (context.phase==='Anual'?'anual':'fiscalizacion')
+        : context.topic;
+      const sources=new Map();
+      for(const [label,description,href] of inePublications(topic,state())){
+        if(href&&!sources.has(href))sources.set(href,[label,description]);
+      }
+      const links=el('ul');
+      for(const [href,[label,description]] of sources){
+        const row=el('li');
+        row.append(action(label,href),el('p',description));
+        links.append(row);
+      }
+      pane.append(links,action('Banco de formatos DJF',djf+'/atlas/banco-formatos'),action('Catálogo de procesos',legalUrl('catalogo'),false));
+    }
     if(forms[key]){
       const holder=el('div');
       holder.innerHTML=forms[key];
@@ -157,12 +274,34 @@
   for(const [key,title,description] of catalog){
     const button=control(title,()=>open(key,title));
     button.innerHTML=icon(key)+'<span>'+title+'<small>'+description+'</small></span>';
+    toolButtons.set(key,button);
     grid.append(button);
   }
+  document.addEventListener('djf:tool-context',event=>updateContext(event.detail));
+  window.addEventListener('message',event=>{
+    if(event.origin!==(location.protocol==='file:'?'null':location.origin))return;
+    if(event.source===document.getElementById('work-section-frame')?.contentWindow&&event.data?.type==='djf-tool-context'){
+      updateContext(event.data);
+    }
+    if(referenceFrame&&event.source===referenceFrame.contentWindow&&event.data?.type==='djf-section-height'&&Number.isFinite(event.data.height)){
+      referenceFrame.style.height=Math.max(300,Math.min(15000,event.data.height+4))+'px';
+    }
+  });
   launch.addEventListener('click',()=>{
-    dialog.querySelector('.djf-tool-state').textContent=document.getElementById('demo-entity')?.textContent||'Expedientes DJF';
-    dialog.showModal();
+    refreshContext();
+    if(dialog.open){dialog.querySelector('[data-close]').focus();return;}
+    const docked=matchMedia('(min-width: 1120px)').matches;
+    dialog.classList.toggle('djf-tools-docked',docked);
+    if(docked){
+      document.body.classList.add('djf-tools-dock-open');
+      dialog.show();
+    }else dialog.showModal();
   });
   dialog.querySelector('[data-close]').addEventListener('click',()=>dialog.close());
-  dialog.addEventListener('close',()=>{back();launch.focus();});
+  dialog.addEventListener('close',()=>{
+    document.body.classList.remove('djf-tools-dock-open');
+    back();
+    launch.focus();
+  });
+
 })();

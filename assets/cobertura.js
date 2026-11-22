@@ -17,26 +17,18 @@ const processGuides = {
   ...specialProcessGuides,
   partido: {
     title: 'Vida y obligaciones del partido',
-    sources: [['INE · Actores políticos y documentos de partidos', 'https://ine.mx/actores-politicos/'], ['Cámara de Diputados · Ley General de Partidos Políticos', 'https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPP.pdf']],
   },
   anual: {
     title: 'Fiscalización del informe anual',
-    sources: [
-      ['INE · Ejemplo de dictamen y resolución anual', 'https://repositoriodocumental.ine.mx/xmlui/handle/123456789/166167'],
-      ['INE · Ejemplo de seguimiento a una conclusión, cumplimiento SG-RAP-2/2025', 'https://repositoriodocumental.ine.mx/xmlui/bitstream/handle/123456789/185938/CGex202510-31-ap-5-11.pdf'],
-    ],
   },
   organizacion: {
     title: 'Organización electoral local',
-    sources: [['INE · Plan y calendarios de coordinación 2026–2027', 'https://repositoriodocumental.ine.mx/xmlui/handle/123456789/189392']],
   },
   fiscalizacion: {
     title: 'Fiscalización de precampaña y campaña',
-    sources: [['TEPJF · Ejemplo de revisión de precampaña, SUP-RAP-80/2021', 'https://www.te.gob.mx/media/SentenciasN/pdf/Superior/SUP-RAP-0080-2021.pdf']],
   },
   defensa: {
     title: 'Impugnación y cumplimiento',
-    sources: [['TEPJF · Ejemplo de recurso de apelación, SUP-RAP-80/2021', 'https://www.te.gob.mx/media/SentenciasN/pdf/Superior/SUP-RAP-0080-2021.pdf']],
   },
 };
 
@@ -118,30 +110,14 @@ function renderStateCoverage(panel, data, topic) {
     section.append(list);
     return section;
   }
-  const sourceRows=new Map();
-  for (const [label,description,href] of inePublications(topic,data.code)){
-    const previous=sourceRows.get(href);
-    if(previous)previous.descriptions.add(description);
-    else sourceRows.set(href,{label,descriptions:new Set([description])});
-  }
-  for (const [label,href] of guide?.sources??[]) {
-    if(!sourceRows.has(href))sourceRows.set(href,{label,descriptions:new Set()});
-  }
-  const publications=element('ul');
-  for(const [href,{label,descriptions}] of sourceRows){
-    const item=element('li');
-    item.append(processSource(label,href));
-    if(descriptions.size)item.append(element('p',[...descriptions].join(' ')));
-    publications.append(item);
-  }
   function referenceSection(label,...children){
-    const details=element('details','','process-reference ine-series');
-    details.append(element('summary',label),publications,...children.filter(Boolean));
+    const details=element('details','','process-reference');
+    details.append(element('summary',label),...children.filter(Boolean));
     return details;
   }
   if (!guide) {
     for (const entry of rows) grid.append(documentSection(...entry));
-    panel.replaceChildren(note,grid,referenceSection('Fuentes oficiales'));
+    panel.replaceChildren(note,grid);
     return;
   }
   const routeList = renderProcessRoutes(topic,data.code);
@@ -184,20 +160,15 @@ function renderStateCoverage(panel, data, topic) {
   }[topic];
   const [docsTitle,docsText,detailTitle,detailText]=copy;
   const resources={
-    organizacion:[
-      ['Normatividad local','Leyes y reglamentos de la entidad.','norm','law'],
-      ['OPLE y publicaciones','Autoridad local, acuerdos, estrados y acervo.','ople','institution'],
-      ['Planes electorales','Planes, numeralia y plataformas de la entidad.','planes','calendar'],
-    ],
     fiscalizacion:[
       ['Consultar acuerdos y topes','Elige etapa y cargo para comparar los montos registrados.','topes','limits'],
       ['Errores y Omisiones','Oficios de precampaña y campaña, y recursos e impugnaciones.','oficios','file'],
     ],
-    defensa:[['Sentencias y jurisprudencia','Abre los índices y carpetas disponibles en el Acervo.','exp','search']],
   };
   const direct = resources[topic]??[];
+  const offered=['exp','norm','ople','planes',...direct.map(([, ,target])=>target)];
   for (const [title,entries] of sections[topic]??rows) {
-    grid.append(documentSection(title,entries,direct.map(([, ,target])=>target)));
+    grid.append(documentSection(title,entries,offered));
   }
   const content = [
     ...direct.map(([label,description,target,icon])=>[label,description,link(target),icon]),
@@ -211,5 +182,5 @@ function renderStateCoverage(panel, data, topic) {
     return;
   }
   const view=renderSectionViews(content);
-  panel.replaceChildren(topic==='sancionadores'?view:addProcessStages(view,topic,link),referenceSection('Fuentes oficiales'));
+  panel.replaceChildren(topic==='sancionadores'?view:addProcessStages(view,topic,link));
 }

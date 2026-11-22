@@ -3,6 +3,7 @@
   const code = query.get('entidad');
   const topic = query.get('tema');
   const embedded = query.get('panel') === '1' && window.parent !== window;
+  const toolPanel=query.get('herramienta')==='1'&&embedded;
   const aliases = {CAM: 'CAMP', TAM: 'TAMPS', TAMP: 'TAMPS'};
   const id = Number(Object.keys(EST).find(key => (aliases[EST[key]] ?? EST[key]) === code));
   const processes = new Set(Object.keys(processGuides));
@@ -89,6 +90,7 @@
     if(eyoDefense){
       const context=processElement('p',eyoDefense[2]+' · Impugnaciones por individualizar en el acervo.','eyo-stage-note');
       panel.prepend(context);
+      if(!query.get('fase'))announceToolContext('defensa',eyoDefense[1]);
       setBackLinks(djfUrl('consulta',{
         entidad:code,tema:'oficios',etapa:eyoDefense[0],
         proceso:processes.has(previousProcess)?previousProcess:null,panel:embedded?'1':null,
@@ -114,11 +116,16 @@
     if (topic === 'exp') document.getElementById('expForm')?.remove();
     contextTitle(name, panel);
   }
+  if (!toolPanel&&!panel.querySelector('.process-stages')&&topic!=='oficios'){
+    const owner=processes.has(from)?from:topic;
+    const phase=processStages[owner]?.find(([key])=>key===query.get('faseOrigen'));
+    announceToolContext(owner,phase?.[1],phase?.[0]);
+  }
   if (embedded) {
     const content = document.createElement('main');
     content.id = 'djf-section-content';
     content.setAttribute('aria-label','Contenido de la sección');
-    if (!processes.has(topic) || eyoDefense) {
+    if (!toolPanel&&(!processes.has(topic) || eyoDefense)) {
       const back = document.querySelector('#detailBar a');
       if (back) {
         if (!new URL(back.href).searchParams.has('panel')) back.target = '_top';

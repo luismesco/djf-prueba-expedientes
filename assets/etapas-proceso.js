@@ -15,14 +15,14 @@ const processStages = {
     ['defensa','Impugnación y cumplimiento','Acto, constancia de notificación, recurso o juicio, resolución y seguimiento.',[2],'defensa'],
   ],
   organizacion: [
-    ['preparacion','Preparación','Plan, calendario, acuerdos, autoridades y cargos por demarcación.',[0,1,2,3,4]],
-    ['registro','Registro de candidaturas','Convocatorias, registros, sustituciones y listas definitivas.',[0,1,3,4]],
-    ['precampana','Precampaña','Periodos por cargo, acuerdos y comunicaciones oficiales de precampaña.',[1,2,3],'fiscalizacion'],
-    ['intercampana','Intercampaña','Calendario y comunicaciones aplicables al periodo entre precampaña y campaña.',[1,2,3]],
-    ['campana','Campaña','Periodos y acuerdos de campaña por cargo y demarcación.',[1,2,3],'fiscalizacion'],
-    ['jornada','Jornada','Actas de casilla, reportes de incidentes y documentación de la jornada.',[1,3]],
-    ['computos','Cómputos y validez','Actas de cómputo, recuentos, constancias, declaratorias y asignaciones.',[1,3,4]],
-    ['cierre','Impugnación y cierre','Resoluciones, resultados definitivos y ajustes o cumplimiento.',[3,4],'defensa'],
+    ['preparacion','Preparación','Plan, calendario, acuerdos, autoridades y cargos por demarcación.',[0,1]],
+    ['registro','Registro de candidaturas','Convocatorias, registros, sustituciones y listas definitivas.',[0,1]],
+    ['precampana','Precampaña','Periodos por cargo, acuerdos y comunicaciones oficiales de precampaña.',[0,1],'fiscalizacion'],
+    ['intercampana','Intercampaña','Calendario y comunicaciones aplicables al periodo entre precampaña y campaña.',[0,1]],
+    ['campana','Campaña','Periodos y acuerdos de campaña por cargo y demarcación.',[0,1],'fiscalizacion'],
+    ['jornada','Jornada','Actas de casilla, reportes de incidentes y documentación de la jornada.',[0,1]],
+    ['computos','Cómputos y validez','Actas de cómputo, recuentos, constancias, declaratorias y asignaciones.',[0,1]],
+    ['cierre','Impugnación y cierre','Resoluciones, resultados definitivos y ajustes o cumplimiento.',[0,1],'defensa'],
   ],
   sancionadores: [
     ['inicio','Recepción e inicio','Queja, acuerdo de inicio o prevención y anexos recibidos.',[0,1,2]],
@@ -32,10 +32,10 @@ const processStages = {
     ['resolucion','Resolución y seguimiento','Determinación, notificación, efectos y constancias posteriores.',[0,1,2],'defensa'],
   ],
   defensa: [
-    ['acto','Acto y notificación','Acto impugnable, constancia de notificación o conocimiento, competencia y oportunidad.',[1,2]],
-    ['promocion','Promoción y trámite','Demanda o recurso, personería, agravios, pruebas, acuse y actuaciones procesales.',[1,2]],
+    ['acto','Acto y notificación','Acto impugnable, constancia de notificación o conocimiento, competencia y oportunidad.',[0,1]],
+    ['promocion','Promoción y trámite','Demanda o recurso, personería, agravios, pruebas, acuse y actuaciones procesales.',[0,1]],
     ['sentencia','Sentencia y efectos','Resolución, notificación, cambio en la determinación y efectos ordenados.',[0,1]],
-    ['cumplimiento','Cumplimiento y cierre','Actos de cumplimiento, notificaciones, evidencias y asuntos pendientes.',[0,1,2]],
+    ['cumplimiento','Cumplimiento y cierre','Actos de cumplimiento, notificaciones, evidencias y asuntos pendientes.',[0,1]],
   ],
   partido: [
     ['registro','Registro y acreditación','Registro, documentación básica y constancias de acreditación local.',[0,1]],
@@ -100,6 +100,7 @@ function addProcessStages(view,topic,link) {
     const index=options.findIndex(([phase])=>phase===key);
     const [,label,summary,visible,related]=options[Math.max(index,0)];
     buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===Math.max(index,0))));
+    announceToolContext(topic,summary?label:'',summary?key:'');
     context.hidden=!summary;
     context.replaceChildren();
     if(summary){

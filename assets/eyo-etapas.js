@@ -26,7 +26,8 @@ function renderEyoStages(panel,{id,initial,link,origin}) {
   });
 
   function show(key) {
-    const [, ,subtitle]=eyoStages.find(([stage])=>stage===key);
+    const [,label,subtitle]=eyoStages.find(([stage])=>stage===key);
+    announceToolContext('oficios',label,key);
     buttons.forEach((button,index)=>button.setAttribute('aria-pressed',String(eyoStages[index][0]===key)));
     const title=processElement('h3',subtitle);
     title.id='eyo-stage-title';
@@ -39,7 +40,6 @@ function renderEyoStages(panel,{id,initial,link,origin}) {
       }
       if(EYO_DIC[id])cards.push(['Dictamen consolidado','Consulta el dictamen incorporado para esta entidad.',link('dictamen',{etapa:key}),'check']);
     }else{
-      cards.push(['Consulta en el INE','Informes, dictámenes y resoluciones por proceso y sujeto obligado.',ineDirectories.treasury,'institution']);
       if(key==='otros')cards.push(['Procesos y vías','Consulta extraordinarias, judiciales y otros supuestos en el catálogo.',link('catalogo'),'tree']);
     }
     cards.push(['Recursos e impugnaciones','Acto controvertido, sentencia y cumplimiento. Consulta el recurso de apelación u otro medio aplicable.',link('defensa',{etapa:key,origen:'oficios',proceso:origin}),'law']);
@@ -50,7 +50,7 @@ function renderEyoStages(panel,{id,initial,link,origin}) {
     }
     content.replaceChildren(title);
     if(key!=='anual'){
-      content.append(processElement('p','La maqueta aún carece de oficios individualizados para este tipo de revisión.','eyo-stage-note'));
+      content.append(processElement('p','Oficios por individualizar. Abre Herramientas → Fuentes oficiales y formatos para consultar publicaciones del INE.','eyo-stage-note'));
     }
     content.append(links);
   }

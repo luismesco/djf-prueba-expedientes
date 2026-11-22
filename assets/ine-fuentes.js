@@ -53,6 +53,10 @@ const ineDirectories = {
 
 function inePublications(topic, state) {
   const sources = {
+    partido: [
+      ['Actores políticos y documentos de partidos','Registro, documentos básicos y convenios.','https://ine.mx/actores-politicos/'],
+      ['Ley General de Partidos Políticos','Consulta el texto oficial y su vigencia.','https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPP.pdf'],
+    ],
     organizacion: [
       ['Ficha oficial de la entidad 2026–2027', 'Cargos, etapas, fechas y materiales del proceso local. Usa el proceso histórico que corresponda cuando cambie el ciclo.', ineStatePages[state]],
       ['Plan Integral y calendarios de coordinación', 'Acuerdo INE/CG480/2026, anexos, modificaciones e informes de seguimiento.', ineDirectories.calendar],
@@ -61,15 +65,19 @@ function inePublications(topic, state) {
       ['Procesos electorales anteriores', 'Conserva cada ciclo en su propio expediente.', ineDirectories.history],
     ],
     anual: [
+      ['Ejemplo de dictamen y resolución anual','Referencia pública del INE.','https://repositoriodocumental.ine.mx/xmlui/handle/123456789/166167'],
+      ['Cumplimiento SG-RAP-2/2025','Ejemplo de seguimiento a una conclusión de fiscalización.','https://repositoriodocumental.ine.mx/xmlui/bitstream/handle/123456789/185938/CGex202510-31-ap-5-11.pdf'],
       ['Rendición de cuentas y resultados de fiscalización', 'Informes del ejercicio ordinario, dictámenes, resoluciones y sus anexos publicados.', ineDirectories.treasury],
       ['SIF y notificaciones electrónicas', 'Conserva el acuse y la documentación soporte en el expediente autorizado. Identifica las versiones públicas cuando existan.', ineDirectories.systems],
     ],
     fiscalizacion: [
+      ['SUP-RAP-80/2021','Ejemplo de revisión de precampaña.','https://www.te.gob.mx/media/SentenciasN/pdf/Superior/SUP-RAP-0080-2021.pdf'],
       ['Rendición de cuentas y resultados de fiscalización', 'Consulta por proceso, entidad, sujeto y fase. Incluye informes, monitoreo, visitas de verificación y resultados según el caso.', ineDirectories.treasury],
       ['SIF y notificaciones electrónicas', 'Distingue apoyo ciudadano, precampaña y campaña en registros, informes y acuses.', ineDirectories.systems],
       ['Ficha electoral de la entidad', 'Comprueba periodo, elección y cargos para vincular el acuerdo de topes aplicable.', ineStatePages[state]],
     ],
     defensa: [
+      ['SUP-RAP-80/2021','Ejemplo de recurso de apelación.','https://www.te.gob.mx/media/SentenciasN/pdf/Superior/SUP-RAP-0080-2021.pdf'],
       ['Repositorio Documental', 'Localiza el acto por clave, fecha y órgano emisor, y coteja sus anexos y acuerdos de cumplimiento.', ineDirectories.repository],
       ['Tribunal Electoral', 'Busca el expediente, la sentencia y las actuaciones de seguimiento.', 'https://www.te.gob.mx/'],
     ],
