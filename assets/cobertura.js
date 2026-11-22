@@ -43,6 +43,17 @@ const specialProcessGuides = {
 
 const processGuides = {
   ...specialProcessGuides,
+  partido: {
+    title: 'Vida y obligaciones del partido',
+    outcome: 'Trámite vinculado al órgano, acto, ámbito y constancias de presentación, aprobación o seguimiento.',
+    steps: [
+      ['Identificar el trámite y la autoridad', 'Separa la actuación interna del trámite ante el INE u OPLE. Coteja estatuto, acuerdo y disposiciones vigentes.'],
+      ['Integrar expediente', 'Reúne convocatoria, actas, personería, documentos básicos y anexos aplicables, con versión y fecha.'],
+      ['Presentar y dar seguimiento', 'Conserva acuse, prevenciones, respuestas y determinación de la autoridad cuando proceda.'],
+      ['Actualizar el registro', 'Vincula el resultado con el padrón, directorio, acuerdos o registros que deban actualizarse.'],
+    ],
+    sources: [['INE · Actores políticos y documentos de partidos', 'https://ine.mx/actores-politicos/'], ['Cámara de Diputados · Ley General de Partidos Políticos', 'https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPP.pdf']],
+  },
   anual: {
     title: 'Fiscalización del informe anual',
     outcome: 'Expediente enlazado por numeral y conclusión, con el resultado de la revisión, la resolución y los pendientes de seguimiento.',
@@ -93,6 +104,12 @@ const processGuides = {
 };
 
 const processExamples = {
+  partido: ['DEMO-PART-01 · Actualización de representación ante el OPLE', [
+    ['Acto de origen', 'Designación del órgano partidista competente y documento que acredita facultades.'],
+    ['Expediente', 'Nombramiento, anexos de acreditación y datos del órgano ante el que se presenta.'],
+    ['Presentación', 'Acuse de recepción y referencia a la respuesta o toma de nota, si corresponde.'],
+    ['Seguimiento', 'Directorio actualizado con vigencia y sustitución del nombramiento anterior.'],
+  ]],
   anual: ['DEMO-IA-01 · Revisión de un informe anual', [
     ['Observación de primera vuelta', 'El oficio de muestra solicita aclarar una operación y aportar su soporte.'],
     ['Respuesta y evidencias', 'Escrito de aclaración, póliza, comprobante y acuse vinculados al numeral.'],
@@ -184,6 +201,11 @@ function renderStateCoverage(panel, data, topic) {
     fiscalizacion: [rows[1], fiscalInputs],
     defensa: [rows[3]],
     anual: [rows[4]],
+    partido: [['Documentos del partido', [
+      ['Registro y representación', pending, 'Acreditación, denominación, ámbito, estatuto vigente, nombramientos y constancias.'],
+      ['Vida interna y obligaciones', pending, 'Padrón, órganos, actas, reformas, transparencia y solicitudes o actuaciones relacionadas.'],
+      ['Convenios y prerrogativas', pending, 'Actos de aprobación, instrumentos, acuerdos de registro, pautas y ministraciones según el trámite.'],
+    ]]],
     extraordinaria: [['Documentos del proceso extraordinario', [['Aplicabilidad, convocatoria y calendario', pending, 'Verifica primero la existencia de un proceso extraordinario para la entidad, demarcación y ciclo elegidos.']]]],
     judicial: [['Documentos de la elección judicial', [['Ámbito y proceso aplicable', pending, 'Confirma si el expediente es federal o local y si corresponde a la entidad y al ciclo consultados.']]]],
     participacion: [['Documentos del ejercicio de participación', [['Convocatoria, actos y resultados territoriales', pending, 'Confirma el ejercicio y conserva su identificación propia.']]]],
@@ -276,5 +298,18 @@ function renderStateCoverage(panel, data, topic) {
     publications.append(item);
   }
   official.append(publications);
-  panel.replaceChildren(...(guide ? [workflow, ...(example ? [examplePanel] : []), element('h3', 'Documentos y cobertura')] : []), note, grid, official, sources);
+  if (!guide) {
+    panel.replaceChildren(note,grid,official,sources);
+    return;
+  }
+  const routeList = renderProcessRoutes(topic,data.code);
+  const catalogueLink = element('a','Abrir catálogo completo');
+  catalogueLink.href = link('catalogo');
+  const content = [
+    ['Ruta', [workflow,...(example?[examplePanel]:[])]],
+    ['Documentos', [element('h3','Documentos y cobertura'),note,grid]],
+    ...(routeList ? [['Rutas específicas',[routeList,catalogueLink]]] : []),
+    ['Fuentes', [official,sources]],
+  ];
+  panel.replaceChildren(renderSectionViews(content));
 }

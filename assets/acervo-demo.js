@@ -7,7 +7,7 @@
   const id = Number(Object.keys(EST).find(key => (aliases[EST[key]] ?? EST[key]) === code));
   const processes = new Set(Object.keys(processGuides));
   const panes = new Map([
-    ['cobertura', 'b-eyo'], ['oficios', 'b-eyo'], ['primera', 'b-eyo'], ['segunda', 'b-eyo'], ['dictamen', 'b-eyo'],
+    ['catalogo', 'b-eyo'], ['cobertura', 'b-eyo'], ['oficios', 'b-eyo'], ['primera', 'b-eyo'], ['segunda', 'b-eyo'], ['dictamen', 'b-eyo'],
     ['norm', 'b-norm'], ['ople', 'b-ople'], ['topes', 'b-topes'], ['exp', 'b-exp'], ['planes', 'b-ople'],
   ]);
   const sourceLink = (label, href) => {
@@ -17,10 +17,10 @@
     a.href = href;
     return a;
   };
-  const index = './index.html?v=contenido-1';
+  const index = './index.html?v=catalogo-1';
   const from = processes.has(topic) ? topic : query.get('proceso');
   const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target, v: 'contenido-1'});
+    const params = new URLSearchParams({entidad: code, tema: target, v: 'catalogo-1'});
     if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
     if (embedded) params.set('panel','1');
     return './consulta.html?' + params;
@@ -59,7 +59,10 @@
   const name = DATA.find(row => row.code === id).name;
   if (processes.has(from) && !processes.has(topic)) setBackLinks(topicHref(from), 'Volver al proceso');
   else setBackLinks(caseHref, 'Volver a los procesos de ' + name);
-  if (topic === 'cobertura' || processes.has(topic)) {
+  if (topic === 'catalogo') {
+    renderProcessCatalogue(panel,code);
+    contextTitle(name + ' · Catálogo de procesos', panel);
+  } else if (topic === 'cobertura' || processes.has(topic)) {
     const state = DATA.find(row => row.code === id);
     renderStateCoverage(panel, {
       state,
@@ -117,12 +120,13 @@
       const target = new URL(link.href);
       if (target.pathname.endsWith('/mesa.html')) {
         target.searchParams.set('panel','1');
-        target.searchParams.set('v','contenido-1');
+        target.searchParams.set('v','catalogo-1');
         link.href = target.href;
       }
     }
     document.body.append(content);
     document.body.classList.add('djf-embedded-section');
+    document.body.dataset.sectionTopic=topic;
     observeSectionHeight(content);
   }
 })();

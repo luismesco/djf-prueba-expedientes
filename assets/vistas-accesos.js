@@ -1,4 +1,6 @@
 const workPreviews = {
+  partido: ['Registro, acreditación local, órganos, padrón y documentos básicos.', 'Candidaturas, convenios, prerrogativas y obligaciones de transparencia.', 'Actuaciones y documentos de salida para cada trámite.'],
+  catalogo: ['57 rutas clasificadas en seis familias.', '14 actuaciones por documento recibido, con su evidencia de salida.', 'Rutas por cargo y vías por cotejar para la entidad seleccionada.'],
   sancionadores: ['Bandeja por entidad con registros de muestra y estado de lectura.', 'Captura de folio, asunto, notificación y referencia de la constancia.', 'Guía de sustanciación, resolución y fuentes de quejas y procedimientos.'],
   calendario: ['Calendario mensual y lista de vencimientos por día.', 'Fechas y horas capturadas en Notificaciones, con estado de atención.', 'Puedes registrar una fecha de prueba y verificar que aparece en el calendario.'],
   anual: ['Informe Anual 2025, oficios de primera y segunda vuelta y dictamen cuando está enlazado.', 'Guía para relacionar numerales, respuestas, anexos, conclusiones y resolución.', 'Cobertura documental por entidad. Quintana Roo incluye una mesa de análisis de muestra.'],
