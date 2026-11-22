@@ -21,3 +21,7 @@
 #demo-case-links a span{color:#624f59}
 .demo-expedientes :focus-visible{outline:3px solid #806026;outline-offset:3px}
 @media(max-width:680px){.demo-map-split{grid-template-columns:1fr}.demo-map-graphic svg{max-height:290px}}
+#demo-case-links a{grid-template-columns:2.6rem minmax(0,1fr);column-gap:.75rem;align-items:center}
+#demo-case-links a[hidden]{display:none!important}
+.demo-topic-icon{grid-row:1 / span 2;width:2.6rem;height:2.6rem;padding:.5rem;border-radius:.65rem;background:#f2e4eb;color:#6d1738}
+#demo-case-links a strong,#demo-case-links a span{grid-column:2}

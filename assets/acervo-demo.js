@@ -5,7 +5,7 @@
   const aliases = {CAM: 'CAMP', TAM: 'TAMPS', TAMP: 'TAMPS'};
   const id = Number(Object.keys(EST).find(key => (aliases[EST[key]] ?? EST[key]) === code));
   const panes = new Map([
-    ['oficios', 'b-eyo'], ['primera', 'b-eyo'], ['segunda', 'b-eyo'], ['dictamen', 'b-eyo'],
+    ['cobertura', 'b-eyo'], ['oficios', 'b-eyo'], ['primera', 'b-eyo'], ['segunda', 'b-eyo'], ['dictamen', 'b-eyo'],
     ['norm', 'b-norm'], ['ople', 'b-ople'], ['topes', 'b-topes'], ['exp', 'b-exp'], ['planes', 'b-ople'],
   ]);
   const sourceLink = (label, href) => {
@@ -50,7 +50,23 @@
   const caseHref = index + '?' + new URLSearchParams({entidad: code});
   const name = DATA.find(row => row.code === id).name;
   setBackLinks(caseHref, 'Volver a las opciones de ' + name);
-  if (topic === 'oficios') {
+  if (topic === 'cobertura') {
+    const state = DATA.find(row => row.code === id);
+    renderStateCoverage(panel, {
+      state,
+      offices: EYO_UTF[id],
+      dictamen: EYO_DIC[id],
+      norms: NORM5[id],
+      ople: OPLE8[id],
+      plans: PLANES[id],
+      limits: MONTOS[id] ?? {},
+      cargos: CARGOS,
+      recentDecisions: SENT02[id],
+      historicalDecisions: SENT03[id],
+      link: topicHref,
+    });
+    contextTitle(name + ' · Documentos por etapa', panel);
+  } else if (topic === 'oficios') {
     const choices = document.createElement('nav');
     choices.className = 'chips';
     choices.setAttribute('aria-label', 'Oficios por vuelta');
