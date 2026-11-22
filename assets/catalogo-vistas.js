@@ -75,6 +75,8 @@ function renderSectionViews(views, initial = -1) {
     const previous=active;
     active=index;
     menu.hidden=index>=0;
+    const stages=root.querySelector(':scope > .process-stages');
+    if(stages)stages.hidden=menu.hidden;
     back.hidden=index<0;
     content.forEach(({section},i)=>{if(section)section.hidden=i!==index;});
     if(focus){

@@ -27,6 +27,8 @@
     entidad:code,tema:target,
     proceso:processes.has(from)&&!processes.has(target)?from:null,
     panel:embedded?'1':null,
+    fase:target===from?query.get('faseOrigen'):null,
+    faseOrigen:target===from?null:query.get('faseOrigen'),
     ...context,
   });
   const setBackLinks = (back, backLabel) => {
@@ -59,6 +61,7 @@
   const block = panes.get(topic) ?? 'b-eyo';
   goStep('detalle', block);
   const panel = document.getElementById(block);
+  if (topic==='topes' && query.get('etapa')==='campana') panel.querySelector('[data-tab=cam]')?.click();
   const caseHref = djfUrl('index',{entidad:code});
   const name = DATA.find(row => row.code === id).name;
   if (processes.has(from) && !processes.has(topic)) setBackLinks(topicHref(from), 'Volver al proceso');
@@ -82,13 +85,14 @@
       link: topicHref,
       code,
     }, topic);
-    if (topic === 'sancionadores') attachComplaintDesk(panel, code);
+    if (topic === 'sancionadores') attachComplaintDesk(panel, code, topicHref);
     if(eyoDefense){
       const context=processElement('p',eyoDefense[2]+' · Impugnaciones por individualizar en el acervo.','eyo-stage-note');
       panel.prepend(context);
       setBackLinks(djfUrl('consulta',{
         entidad:code,tema:'oficios',etapa:eyoDefense[0],
         proceso:processes.has(previousProcess)?previousProcess:null,panel:embedded?'1':null,
+        faseOrigen:query.get('faseOrigen'),
       }), 'Volver a Errores y Omisiones');
     }
     contextTitle(name + ' · ' + (processes.has(topic) ? processGuides[topic].title : 'Documentos por proceso'), panel);

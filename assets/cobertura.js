@@ -164,12 +164,12 @@ function renderStateCoverage(panel, data, topic) {
       mesa.href='./mesa.html';
       reconciliation.prepend(mesa);
     }
-    panel.replaceChildren(renderSectionViews([
+    panel.replaceChildren(addProcessStages(renderSectionViews([
       ['Oficios de Errores y Omisiones','Primera y segunda vuelta del Informe Anual 2025.',link('oficios',{etapa:'anual'}),'file'],
       ['Informe, respuestas y anexos','Acuses y evidencia del sujeto obligado por vuelta.',[docs],'tree'],
       ['Dictamen y resolución','Conclusiones, determinaciones y constancias pendientes de cotejo.',[documentSection('Determinaciones de la autoridad',[decision,resolution])],'law'],
       ['Cotejo por numeral y conclusión','Observación, respuesta, prueba, valoración y consecuencia.',[reconciliation],'check'],
-    ]),references);
+    ]),topic,link),references);
     return;
   }
   const copy = {
@@ -205,10 +205,11 @@ function renderStateCoverage(panel, data, topic) {
     ...(routeList ? [[detailTitle,detailText,[routeList,catalogueLink],topic==='defensa'?'law':topic==='organizacion'?'map':'tree']] : []),
   ];
   if (topic === 'fiscalizacion') {
-    panel.replaceChildren(renderSectionViews(content.slice(0,direct.length+1)),
+    panel.replaceChildren(addProcessStages(renderSectionViews(content.slice(0,direct.length+1)),topic,link),
       referenceSection('Referencias de fiscalización',routeList,catalogueLink));
 
     return;
   }
-  panel.replaceChildren(renderSectionViews(content),referenceSection('Fuentes oficiales'));
+  const view=renderSectionViews(content);
+  panel.replaceChildren(topic==='sancionadores'?view:addProcessStages(view,topic,link),referenceSection('Fuentes oficiales'));
 }

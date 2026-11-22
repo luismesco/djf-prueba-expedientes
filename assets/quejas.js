@@ -1,4 +1,4 @@
-function attachComplaintDesk(panel, state) {
+function attachComplaintDesk(panel, state, link) {
   const key = 'djf-quejas-demo-v1:' + state;
   const today = new Date();
   const iso = date => [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
@@ -65,11 +65,11 @@ function attachComplaintDesk(panel, state) {
   const summary=document.createElement('summary');
   summary.textContent='Referencias del procedimiento';
   references.append(summary,...guide);
-  desk.append(renderSectionViews([
+  desk.append(addProcessStages(renderSectionViews([
     ['Notificaciones','Folio, fecha de recepción, constancia y estado de lectura.',[noticePanel],'inbox'],
     ['Plazos y vencimientos','Calendario, hora registrada y estado de atención.',[calendarContent],'calendar'],
     ['Expedientes y actuaciones','Actuaciones por folio con su constancia y vencimiento registrado.',[cases,references],'file'],
-  ], new URLSearchParams(location.search).get('vista')==='calendario'?1:-1));
+  ], new URLSearchParams(location.search).get('vista')==='calendario'?1:-1),'sancionadores',link));
   panel.replaceChildren(desk);
   const notices = desk.querySelector('.complaint-notices');
   const dueList = desk.querySelector('.complaint-due');
