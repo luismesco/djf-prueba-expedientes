@@ -16,7 +16,7 @@
   };
   const icon=key=>'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="'+iconPaths[key]+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const catalog=[
-    ['morenai','Herramientas de IA'],
+    ['morenai','MorenAI'],
     ['audio','Transcripción de audio'],
     ['oficio','Generar oficio'],
     ['comparar','Comparar versiones'],
@@ -29,21 +29,18 @@
   const dialog=document.createElement('dialog');
   dialog.className='djf-tools-dialog';
   dialog.setAttribute('aria-labelledby','djf-tools-title');
-  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-ai djf-tools-grid"></div><details class="djf-tools-list"><summary>Recursos</summary><div class="djf-tools-grid djf-resource-grid"></div><div class="djf-tools-extra"><h3>Utilidades de trabajo</h3><div class="djf-tools-grid"></div></div></details><section class="djf-tool-pane" hidden></section>';
+  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><div class="djf-tools-menu djf-tools-grid"></div><section class="djf-tool-pane" hidden></section>';
   const launch=document.createElement('button');
   launch.type='button';
   launch.className='djf-tools-launch';
   launch.setAttribute('aria-haspopup','dialog');
   launch.innerHTML=icon('toolbox')+'<span>Herramientas</span>';
   document.body.append(launch,dialog);
-  const related=dialog.querySelector('.djf-tools-context');
-  const recommended=related.querySelector('.djf-tools-grid');
-  const ai=dialog.querySelector('.djf-tools-ai');
-  const list=dialog.querySelector('.djf-tools-list');
-  const resources=list.querySelector('.djf-resource-grid');
-  const extras=list.querySelector('.djf-tools-extra');
-  const grid=extras.querySelector('.djf-tools-grid');
-  const resourceKeys=['normas','jurisprudencia','fuentes'];
+  const menu=dialog.querySelector('.djf-tools-menu');
+  const groups={
+    ai:{title:'Herramientas de IA',icon:'morenai',keys:['morenai','audio','oficio','comparar','pruebas','plazos']},
+    resources:{title:'Recursos',icon:'normas',keys:['normas','fuentes','jurisprudencia']},
+  };
   const toolButtons=new Map();
   const contextByTopic={
     defensa:['jurisprudencia','pruebas','plazos'],
@@ -116,19 +113,14 @@
     const entity=(document.getElementById('demo-entity')??document.getElementById('fNombre'))?.textContent;
     const parts=[entity,sectionTitle,context.phase].filter(Boolean);
     dialog.querySelector('.djf-tool-state').textContent=parts.join(' · ')||'Expedientes DJF';
+  }
+  function orderedKeys(group){
     const phases=Object.hasOwn(contextByPhase,context.topic)?contextByPhase[context.topic]:{};
     const preferred=Object.hasOwn(phases,context.phaseKey)?phases[context.phaseKey]:
       Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:['plazos','comparar','pruebas'];
-    const keys=preferred.filter(key=>!resourceKeys.includes(key)).slice(0,3);
-    for(const key of new Set([...preferred.filter(key=>resourceKeys.includes(key)),...resourceKeys])){
-      resources.append(toolButtons.get(key));
-    }
-    for(const [key,button] of toolButtons){
-      if(!keys.includes(key)&&!resourceKeys.includes(key))grid.append(button);
-    }
-    extras.hidden=!grid.children.length;
-    for(const key of keys)recommended.append(toolButtons.get(key));
-    related.hidden=!keys.length||!pane.hidden;
+    return group===groups.ai
+      ? [...new Set(['morenai',...preferred.filter(key=>group.keys.includes(key)),...group.keys])]
+      : group.keys;
   }
   function updateContext(detail){
     if(typeof detail?.topic!=='string'||typeof detail.phase!=='string')return;
@@ -171,24 +163,31 @@
     button.addEventListener('click',run);
     return button;
   }
-  function back(){
+  function showMenu(group){
     releaseAudio();
     referenceFrame=null;
-    ai.hidden=false;
-    list.hidden=false;
+    menu.hidden=false;
     pane.hidden=true;
     pane.replaceChildren();
-    refreshContext();
-    (related.hidden?ai:recommended).querySelector('button')?.focus();
+    (menu.querySelector('[data-group="'+group.icon+'"]')??menu.firstElementChild)?.focus();
   }
-  function open(key,name){
-    related.hidden=true;
-    ai.hidden=true;
-    list.hidden=true;
+  function openGroup(group,previous){
+    releaseAudio();
+    referenceFrame=null;
+    menu.hidden=true;
     pane.hidden=false;
+    const title=el('h3',group.title);
+    title.tabIndex=-1;
+    const items=el('div');
+    items.className='djf-tools-grid';
+    items.append(...orderedKeys(group).map(key=>toolButtons.get(key)));
+    pane.replaceChildren(control('Volver a Herramientas',()=>showMenu(group)),title,items);
+    (toolButtons.get(previous)??title).focus();
+  }
+  function open(key,name,group){
     const title=el('h3',name);
     title.tabIndex=-1;
-    pane.replaceChildren(control('Volver a herramientas',back),title);
+    pane.replaceChildren(control('Volver a '+group.title,()=>openGroup(group,key)),title);
     if(key==='morenai')pane.append(el('p','Abre MorenAI en el sistema DJF con tu sesión. Desde ahí puedes consultar normativa, criterios y sentencias.'),action('Abrir MorenAI',djf+'/atlas/sentencias'));
     if(key==='plazos')pane.append(el('p',state()?'Abrir el seguimiento de la entidad seleccionada.':'Elige una entidad en Expedientes para abrir su bandeja.'),action('Notificaciones',legalUrl('sancionadores'),false),action('Calendario de vencimientos',legalUrl('calendario'),false));
     if(key==='jurisprudencia'){
@@ -285,14 +284,19 @@
     }
     title.focus();
   }
-  for(const [key,title] of catalog){
-    const button=control(title,()=>open(key,title));
+  function tile(key,title,run){
+    const button=control(title,run);
     button.innerHTML=icon(key)+'<span>'+title+'</span>';
-    if(key==='morenai')ai.append(button);
-    else{
-      toolButtons.set(key,button);
-      grid.append(button);
-    }
+    return button;
+  }
+  for(const group of Object.values(groups)){
+    const button=tile(group.icon,group.title,()=>openGroup(group));
+    button.dataset.group=group.icon;
+    menu.append(button);
+  }
+  for(const [key,title] of catalog){
+    const group=groups.resources.keys.includes(key)?groups.resources:groups.ai;
+    toolButtons.set(key,tile(key,title,()=>open(key,title,group)));
   }
   document.addEventListener('djf:tool-context',event=>updateContext(event.detail));
   window.addEventListener('message',event=>{
@@ -317,8 +321,7 @@
   dialog.querySelector('[data-close]').addEventListener('click',()=>dialog.close());
   dialog.addEventListener('close',()=>{
     document.body.classList.remove('djf-tools-dock-open');
-    list.open=false;
-    back();
+    showMenu();
     launch.focus();
   });
 
