@@ -16,7 +16,7 @@
   };
   const icon=key=>'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="'+iconPaths[key]+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const catalog=[
-    ['morenai','MorenAI'],
+    ['morenai','Herramientas de IA'],
     ['audio','Transcripción de audio'],
     ['oficio','Generar oficio'],
     ['comparar','Comparar versiones'],
@@ -29,7 +29,7 @@
   const dialog=document.createElement('dialog');
   dialog.className='djf-tools-dialog';
   dialog.setAttribute('aria-labelledby','djf-tools-title');
-  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><details class="djf-tools-list"><summary>Más herramientas</summary><div class="djf-tools-grid"></div></details><section class="djf-tool-pane" hidden></section>';
+  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-ai djf-tools-grid"></div><details class="djf-tools-list"><summary>Consultas y utilidades</summary><div class="djf-tools-grid"></div></details><section class="djf-tool-pane" hidden></section>';
   const launch=document.createElement('button');
   launch.type='button';
   launch.className='djf-tools-launch';
@@ -38,6 +38,7 @@
   document.body.append(launch,dialog);
   const related=dialog.querySelector('.djf-tools-context');
   const recommended=related.querySelector('.djf-tools-grid');
+  const ai=dialog.querySelector('.djf-tools-ai');
   const list=dialog.querySelector('.djf-tools-list');
   const grid=list.querySelector('.djf-tools-grid');
   const toolButtons=new Map();
@@ -114,7 +115,7 @@
     dialog.querySelector('.djf-tool-state').textContent=parts.join(' · ')||'Expedientes DJF';
     const phases=Object.hasOwn(contextByPhase,context.topic)?contextByPhase[context.topic]:{};
     const preferred=Object.hasOwn(phases,context.phaseKey)?phases[context.phaseKey]:
-      Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:['morenai','jurisprudencia','normas'];
+      Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:['jurisprudencia','normas','fuentes'];
     const keys=preferred.slice(0,3);
     for(const [key,button] of toolButtons)if(!keys.includes(key))grid.append(button);
     for(const key of keys)recommended.append(toolButtons.get(key));
@@ -164,6 +165,7 @@
   function back(){
     releaseAudio();
     referenceFrame=null;
+    ai.hidden=false;
     list.hidden=false;
     pane.hidden=true;
     pane.replaceChildren();
@@ -172,6 +174,7 @@
   }
   function open(key,name){
     related.hidden=true;
+    ai.hidden=true;
     list.hidden=true;
     pane.hidden=false;
     const title=el('h3',name);
@@ -276,8 +279,11 @@
   for(const [key,title] of catalog){
     const button=control(title,()=>open(key,title));
     button.innerHTML=icon(key)+'<span>'+title+'</span>';
-    toolButtons.set(key,button);
-    grid.append(button);
+    if(key==='morenai')ai.append(button);
+    else{
+      toolButtons.set(key,button);
+      grid.append(button);
+    }
   }
   document.addEventListener('djf:tool-context',event=>updateContext(event.detail));
   window.addEventListener('message',event=>{
