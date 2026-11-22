@@ -13,7 +13,7 @@ function render(focus = false) {
     picker.value = code;
     entity.textContent = name;
     for (const link of document.querySelectorAll('[data-topic]')) {
-      const params = new URLSearchParams({entidad: code, tema: link.dataset.topic, v: 'ocupaciones-1'});
+      const params = new URLSearchParams({entidad: code, tema: link.dataset.topic, v: 'orden-2'});
       if (link.dataset.view) params.set('vista', link.dataset.view);
       link.href = './consulta.html?' + params;
     }

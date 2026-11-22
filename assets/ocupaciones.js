@@ -19,7 +19,17 @@
     return [...new Set([...valid,...allowed])];
   };
   const groupOrder = ordered(stored.groups,groupIds);
-  const order = Object.fromEntries(groupIds.map(group=>[group,ordered(stored.order?.[group],defaults[group])]));
+  const assigned = new Set();
+  const order = Object.fromEntries(groupIds.map(group=>{
+    const saved = stored.order?.[group];
+    const ids = (Array.isArray(saved)?saved:[]).filter(id=>{
+      if(!cards.has(id)||assigned.has(id))return false;
+      assigned.add(id);
+      return true;
+    });
+    return [group,ids];
+  }));
+  for(const group of groupIds)order[group].push(...defaults[group].filter(id=>!assigned.has(id)));
   const pinned = Array.isArray(stored.pinned) ? [...new Set(stored.pinned.filter(id=>cards.has(id)))] : [];
   let editing = false;
 
@@ -35,15 +45,45 @@
     const controls = document.createElement('div');
     controls.className = 'work-actions';
     controls.dataset.target = target;
+    const handle = document.createElement('span');
+    handle.className = 'work-drag-handle';
+    handle.dataset.drag = group?'group':'card';
+    handle.setAttribute('aria-hidden','true');
+    handle.textContent = '⠿';
+    controls.append(handle);
     if (!group) {
       const isPinned = pinned.includes(target);
       controls.append(button('pin',(isPinned?'Desanclar ':'Anclar ')+title,isPinned?'Desanclar':'Anclar'));
+      const destination = document.createElement('select');
+      destination.dataset.workDestination = target;
+      destination.setAttribute('aria-label','Mover '+title+' a');
+      for(const [value,text] of [['','Mover a…'],['pinned','Anclados'],...groups.map(item=>[item.dataset.group,item.querySelector('h4').textContent])]){
+        destination.append(new Option(text,value));
+      }
+      controls.append(destination);
     }
     controls.append(button('up','Subir '+title,'↑'),button('down','Bajar '+title,'↓'));
     host.append(controls);
   }
   groups.forEach(group=>actions(group.querySelector('.work-group-head'),group.dataset.group,group.querySelector('h4').textContent,true));
-  cards.forEach((card,id)=>actions(card,id,card.querySelector('strong').textContent));
+  cards.forEach((card,id)=>{
+    actions(card,id,card.querySelector('strong').textContent);
+    const preview = document.createElement('details');
+    preview.className = 'work-preview';
+    preview.name = 'work-preview';
+    const title = card.querySelector('strong').textContent;
+    const summary = document.createElement('summary');
+    summary.textContent = 'Ver contenido';
+    summary.setAttribute('aria-label','Ver contenido de '+title);
+    const list = document.createElement('ul');
+    for(const text of workPreviews[id]){
+      const item = document.createElement('li');
+      item.textContent = text;
+      list.append(item);
+    }
+    preview.append(summary,list);
+    card.append(preview);
+  });
 
   function updateMoves(controls, index, count) {
     // Keep boundary controls focusable so reordering preserves the user's focus.
@@ -67,6 +107,9 @@
         const pin=controls.querySelector('[data-work-action=pin]');
         pin.textContent=name==='pinned'?'Desanclar':'Anclar';
         pin.setAttribute('aria-label',pin.textContent+' '+card.querySelector('strong').textContent);
+        const destination = controls.querySelector('select');
+        destination.value = '';
+        destination.querySelectorAll('option').forEach(option=>{option.disabled=option.value===name;});
         updateMoves(controls,index,visible[name].length);
       });
     }
@@ -91,6 +134,100 @@
     if(index<0||next<0||next>=items.length)return;
     [items[index],items[next]]=[items[next],items[index]];
   }
+  function insert(items,id,target,after) {
+    const from = items.indexOf(id);
+    if(from>=0)items.splice(from,1);
+    const position = items.indexOf(target);
+    items.splice(position<0?items.length:position+Number(after),0,id);
+  }
+  function placeCard(id,destination,target,after=false) {
+    if(destination==='pinned') {
+      insert(pinned,id,target,after);
+      return;
+    }
+    const oldGroup=groupIds.find(group=>order[group].includes(id));
+    const pinnedAt=pinned.indexOf(id);
+    if(pinnedAt>=0)pinned.splice(pinnedAt,1);
+    if(oldGroup!==destination)order[oldGroup].splice(order[oldGroup].indexOf(id),1);
+    insert(order[destination],id,target,after);
+  }
+  root.addEventListener('change',event=>{
+    const field=event.target.closest('select[data-work-destination]');
+    if(!editing||!field||!lists.has(field.value))return;
+    placeCard(field.dataset.workDestination,field.value);
+    save('Acceso movido.');
+    render();
+    field.focus();
+  });
+
+  let drag = null;
+  function clearDrop() {
+    root.querySelectorAll('.work-drop,.work-drop-after').forEach(node=>node.classList.remove('work-drop','work-drop-after'));
+  }
+  function dropTarget(x,y) {
+    const hit=document.elementFromPoint(x,y);
+    const group=hit?.closest('[data-group]');
+    const card=hit?.closest('[data-access]');
+    if(drag.kind==='group'){
+      if(!group||group===drag.source)return null;
+      const bounds=group.getBoundingClientRect();
+      return {node:group,id:group.dataset.group,after:y>bounds.top+bounds.height/2};
+    }
+    if(card===drag.source)return null;
+    const list=hit?.closest('[data-list]')??(group?lists.get(group.dataset.group):hit?.closest('#work-pins')?lists.get('pinned'):null);
+    if(!list)return null;
+    const bounds=card?.getBoundingClientRect();
+    return {node:card??list,id:card?.dataset.access,list:list.dataset.list,after:!!bounds&&y>bounds.top+bounds.height/2};
+  }
+  function showDrop() {
+    clearDrop();
+    drag.target=dropTarget(drag.x,drag.y);
+    if(drag.target)drag.target.node.classList.add(drag.target.after?'work-drop-after':'work-drop');
+  }
+  function scrollFrame() {
+    if(!drag?.active)return;
+    const edge=68;
+    const speed=drag.y<edge?-12:drag.y>innerHeight-edge?12:0;
+    if(speed){window.scrollBy(0,speed);showDrop();}
+    drag.frame=requestAnimationFrame(scrollFrame);
+  }
+  root.addEventListener('pointerdown',event=>{
+    const handle=event.target.closest('[data-drag]');
+    if(!editing||!handle||!event.isPrimary||event.button!==0)return;
+    const kind=handle.dataset.drag;
+    const source=handle.closest(kind==='group'?'[data-group]':'[data-access]');
+    drag={kind,source,id:kind==='group'?source.dataset.group:source.dataset.access,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,pointer:event.pointerId,active:false};
+    handle.setPointerCapture(event.pointerId);
+  });
+  root.addEventListener('pointermove',event=>{
+    if(!drag||event.pointerId!==drag.pointer)return;
+    drag.x=event.clientX;
+    drag.y=event.clientY;
+    if(!drag.active){
+      if(Math.hypot(drag.x-drag.startX,drag.y-drag.startY)<5)return;
+      drag.active=true;
+      drag.source.classList.add('work-dragging');
+      drag.frame=requestAnimationFrame(scrollFrame);
+    }
+    showDrop();
+  });
+  function finishDrag(event,apply) {
+    if(!drag||event.pointerId!==drag.pointer)return;
+    const {kind,id,source,target,frame}=drag;
+    drag=null;
+    cancelAnimationFrame(frame);
+    clearDrop();
+    source.classList.remove('work-dragging');
+    if(!apply||!target)return;
+    if(kind==='group')insert(groupOrder,id,target.id,target.after);
+    else placeCard(id,target.list,target.id,target.after);
+    save('Orden actualizado.');
+    render();
+  }
+  root.addEventListener('pointerup',event=>finishDrag(event,true));
+  root.addEventListener('pointercancel',event=>finishDrag(event,false));
+  root.addEventListener('lostpointercapture',event=>finishDrag(event,false));
+
   customize.addEventListener('click',()=>{
     editing=!editing;
     render();

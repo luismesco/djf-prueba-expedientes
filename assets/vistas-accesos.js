@@ -1,0 +1,11 @@
+const workPreviews = {
+  sancionadores: ['Bandeja por entidad con registros de muestra y estado de lectura.', 'Captura de folio, asunto, notificación y referencia de la constancia.', 'Guía de sustanciación, resolución y fuentes de quejas y procedimientos.'],
+  calendario: ['Calendario mensual y lista de vencimientos por día.', 'Fechas y horas capturadas en Notificaciones, con estado de atención.', 'Puedes registrar una fecha de prueba y verificar que aparece en el calendario.'],
+  anual: ['Informe Anual 2025, oficios de primera y segunda vuelta y dictamen cuando está enlazado.', 'Guía para relacionar numerales, respuestas, anexos, conclusiones y resolución.', 'Cobertura documental por entidad. Quintana Roo incluye una mesa de análisis de muestra.'],
+  fiscalizacion: ['Topes por entidad, etapa y cargo, con acuerdos y montos cuando están registrados.', 'Guía para integrar informes, comprobantes, oficios y respuestas.', 'Accesos al portal de fiscalización, SIF y ficha electoral de la entidad.'],
+  defensa: ['Guía desde el acto impugnado y su notificación hasta sentencia y cumplimiento.', 'Accesos a sentencias locales, federales y jurisprudencia del Acervo.', 'Referencias para cotejar acto, medio, folio, efectos y actuaciones posteriores.'],
+  organizacion: ['Ficha oficial del INE para la entidad, normativa local, OPLE y planes.', 'Preparación, candidaturas, jornada, cómputos, validez y resultados.', 'Calendario de coordinación, publicaciones e histórico de elecciones.'],
+  extraordinaria: ['Qué reunir si existe convocatoria extraordinaria en la entidad o demarcación.', 'Acto de origen, calendario propio, registros, fiscalización y cómputos.', 'Ejemplo oficial de Tamiahua y acceso al histórico del INE.'],
+  judicial: ['Guía para confirmar ámbito federal o local, ciclo, cargos y demarcación judicial.', 'Convocatoria, candidaturas, materiales, cómputos y validez.', 'Fuentes del INE sobre la elección judicial de 2025 y sus resultados.'],
+  participacion: ['Guía para identificar el ejercicio y la documentación territorial aplicable.', 'Convocatoria, materiales, jornada, cómputos y cierre.', 'Publicaciones oficiales de Consulta Popular 2021 y Revocación de Mandato 2022.'],
+};

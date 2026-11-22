@@ -16,10 +16,10 @@
     a.href = href;
     return a;
   };
-  const index = './index.html?v=ocupaciones-1';
+  const index = './index.html?v=orden-2';
   const from = processes.has(topic) ? topic : query.get('proceso');
   const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target, v: 'ocupaciones-1'});
+    const params = new URLSearchParams({entidad: code, tema: target, v: 'orden-2'});
     if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
     return './consulta.html?' + params;
   };
