@@ -11,6 +11,7 @@ function render(focus = false) {
   optionsView.hidden = !name;
   if (name) {
     picker.value = code;
+    document.getElementById('demo-case-links').hidden = false;
     entity.textContent = name;
     for (const link of document.querySelectorAll('[data-topic]')) {
       link.href = './consulta.html?' + new URLSearchParams({entidad: code, tema: link.dataset.topic});
