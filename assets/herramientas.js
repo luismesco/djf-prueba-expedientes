@@ -2,6 +2,7 @@
   if(window.parent!==window)return;
   const djf='https://analisiseyodjf.up.railway.app';
   const iconPaths={
+    close:'M6 6l12 12M18 6 6 18',
     toolbox:'M4 8h16v12H4z M9 8V5h6v3 M4 13h16m-11 0v3m6-3v3',
     morenai:'M4 5h16v11H8l-4 4z M9 10h6m-6 3h4',
     audio:'M4 10v4m4-8v12m4-15v18m4-15v12m4-8v4',
@@ -28,7 +29,7 @@
   const dialog=document.createElement('dialog');
   dialog.className='djf-tools-dialog';
   dialog.setAttribute('aria-labelledby','djf-tools-title');
-  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas de trabajo</h2><button type="button" data-close aria-label="Cerrar herramientas">Cerrar</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-list"><div class="djf-tools-grid"></div></div><section class="djf-tool-pane" hidden></section>';
+  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas de trabajo</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-list"><div class="djf-tools-grid"></div></div><section class="djf-tool-pane" hidden></section>';
   const launch=document.createElement('button');
   launch.type='button';
   launch.className='djf-tools-launch';
