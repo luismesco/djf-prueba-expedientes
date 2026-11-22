@@ -17,14 +17,13 @@
     a.href = href;
     return a;
   };
-  const index = './index.html?v=atencion-1';
+  const index = djfUrl('index');
   const from = processes.has(topic) ? topic : query.get('proceso');
-  const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target, v: 'atencion-1'});
-    if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
-    if (embedded) params.set('panel','1');
-    return './consulta.html?' + params;
-  };
+  const topicHref = target => djfUrl('consulta',{
+    entidad:code,tema:target,
+    proceso:processes.has(from)&&!processes.has(target)?from:null,
+    panel:embedded?'1':null,
+  });
   const setBackLinks = (back, backLabel) => {
     document.getElementById('detailBar').replaceChildren(
       sourceLink(backLabel, back), sourceLink('Volver al mapa', index),
@@ -55,7 +54,7 @@
   const block = panes.get(topic) ?? 'b-eyo';
   goStep('detalle', block);
   const panel = document.getElementById(block);
-  const caseHref = index + '&' + new URLSearchParams({entidad: code});
+  const caseHref = djfUrl('index',{entidad:code});
   const name = DATA.find(row => row.code === id).name;
   if (processes.has(from) && !processes.has(topic)) setBackLinks(topicHref(from), 'Volver al proceso');
   else setBackLinks(caseHref, 'Volver a los procesos de ' + name);
@@ -92,7 +91,7 @@
     const rows = [...document.getElementById('eyoContent').children];
     panel.replaceChildren(rows[n*2], rows[n*2+1]);
     contextTitle(name + ' · Errores y Omisiones', panel);
-    setBackLinks(topicHref('oficios'), 'Volver a Errores y Omisiones');
+    if (topic !== 'dictamen') setBackLinks(topicHref('oficios'), 'Volver a Errores y Omisiones');
   } else if (topic === 'planes') {
     const plans = document.getElementById('oplePlanes');
     panel.replaceChildren(plans);
@@ -116,9 +115,7 @@
     for (const link of content.querySelectorAll('a[href]')) {
       const target = new URL(link.href);
       if (target.pathname.endsWith('/mesa.html')) {
-        target.searchParams.set('panel','1');
-        target.searchParams.set('v','atencion-1');
-        link.href = target.href;
+        link.href = djfUrl('mesa',{panel:'1'});
       }
     }
     document.body.append(content);

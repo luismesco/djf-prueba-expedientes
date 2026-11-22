@@ -34,7 +34,7 @@
   const grid=dialog.querySelector('.djf-tools-grid');
   const pane=dialog.querySelector('.djf-tool-pane');
   const state=()=>new URLSearchParams(location.search).get('entidad')||'';
-  const legalUrl=kind=>state()?'./index.html?'+new URLSearchParams({entidad:state(),seccion:kind,v:'atencion-1'}):'./index.html?v=atencion-1';
+  const legalUrl=kind=>djfUrl('index',{entidad:state(),seccion:state()?kind:null});
   const action=(label,href,remote=true)=>{
     const link=document.createElement('a');
     link.className='tool-action';

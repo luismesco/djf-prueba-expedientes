@@ -13,9 +13,7 @@ function render(focus = false) {
     picker.value = code;
     entity.textContent = name;
     for (const link of document.querySelectorAll('[data-topic]')) {
-      const params = new URLSearchParams({entidad: code, tema: link.dataset.topic, v: 'atencion-1'});
-      if (link.dataset.view) params.set('vista', link.dataset.view);
-      link.href = './consulta.html?' + params;
+      link.href = djfUrl('consulta',{entidad:code,tema:link.dataset.topic,vista:link.dataset.view});
     }
   }
   if (focus) (name ? entity : document.getElementById('demo-map-title')).focus();

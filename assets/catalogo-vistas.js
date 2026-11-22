@@ -86,14 +86,13 @@ function renderSectionViews(views, initial = -1) {
   show(initial,false);
   return root;
 }
-function renderCatalogueEntry(entry,source) {
+function renderCatalogueEntry(entry) {
   const details=processElement('details','','process-route');
   details.append(processElement('summary',entry.name));
   const steps=processElement('p',entry.steps);
   const output=processElement('p');
   output.append(processElement('strong','Resultado o constancia. '),document.createTextNode(entry.output));
   details.append(steps,output);
-  if(source)details.append(processSource('Abrir fuente de consulta',source));
   return details;
 }
 function renderLocalProcessRoutes(code) {
@@ -127,7 +126,7 @@ function renderProcessRoutes(topic,code) {
     if(topic==='judicial')rows=rows.filter(item=>/judicial/i.test(item.name));
     if(topic==='participacion')rows=rows.filter(item=>/Consulta popular/.test(item.name));
     section.append(processElement('h3',family.title));
-    for(const row of rows)section.append(renderCatalogueEntry(row,family.source));
+    for(const row of rows)section.append(renderCatalogueEntry(row));
   }
   if(['organizacion','defensa'].includes(topic))section.prepend(renderLocalProcessRoutes(code));
   if(['sancionadores','defensa','anual'].includes(topic)){
@@ -139,7 +138,7 @@ function renderProcessRoutes(topic,code) {
 function renderProcessCatalogue(panel,code) {
   const {families,acts}=djfProcessCatalogue;
   const total=families.reduce((sum,family)=>sum+family.entries.length,0);
-  const info=processElement('p',total+' rutas de trabajo · '+families.length+' familias · '+acts.length+' actuaciones por documento · 32 fichas estatales');
+  const info=processElement('p',total+' rutas de trabajo · '+families.length+' familias · '+acts.length+' actuaciones por documento · '+Object.keys(djfProcessCatalogue.local).length+' fichas estatales');
   const note=processElement('p','El catálogo reúne trámites del partido, vías de defensa y elecciones que requieren seguimiento. La aplicación depende del rol, ámbito, entidad, acto y norma vigente.');
   const input=processElement('input');
   input.id='process-finder';
@@ -154,7 +153,8 @@ function renderProcessCatalogue(panel,code) {
   for(const family of groups){
     const group=processElement('details','','process-family');
     group.append(processElement('summary',family.title+' · '+family.entries.length));
-    for(const row of family.entries)group.append(renderCatalogueEntry(row,family.source));
+    if(family.source)group.append(processSource('Consultar fuente de la familia',family.source));
+    for(const row of family.entries)group.append(renderCatalogueEntry(row));
     list.append(group);
   }
   const normalized=text=>text.toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
@@ -174,7 +174,7 @@ function renderProcessCatalogue(panel,code) {
     status.textContent=query?matches+' resultados':'';
   });
   panel.replaceChildren(info,note,renderSectionViews([
-    ['Buscador de procesos y actuaciones','57 rutas y 14 guías por documento recibido.',[label,input,status,list],'search'],
+    ['Buscador de procesos y actuaciones','Rutas de trabajo por familia y guías por documento recibido.',[label,input,status,list],'search'],
     ['Cargos y medios de la entidad','Secuencias por elección, vías locales por cotejar y referencias estatales.',[renderLocalProcessRoutes(code)],'map'],
   ]));
 }

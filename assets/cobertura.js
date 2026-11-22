@@ -84,7 +84,7 @@ function renderStateCoverage(panel, data, topic) {
   ]];
   const sections = {
     organizacion: [rows[0], rows[2]],
-    fiscalizacion: [rows[1], fiscalInputs],
+    fiscalizacion: [fiscalInputs],
     defensa: [rows[3]],
     anual: [rows[4]],
     partido: [['Documentos del partido', [
@@ -97,23 +97,18 @@ function renderStateCoverage(panel, data, topic) {
     participacion: [['Documentos del ejercicio de participación', [['Convocatoria, actos y resultados territoriales', pending, 'Confirma el ejercicio y conserva su identificación propia.']]]],
     sancionadores: [['Documentos del procedimiento', [['Vía, expediente y resolución', pending, 'Localiza la referencia individual antes de registrar un procedimiento como incorporado.']]]],
   };
-  const element = (tag, text, className) => {
-    const node = document.createElement(tag);
-    if (text) node.textContent = text;
-    if (className) node.className = className;
-    return node;
-  };
+  const element = processElement;
   const note = element('p', 'Cobertura de enlaces del acervo al 20 de noviembre de 2026. Una carpeta enlazada acredita su disponibilidad en el índice. «Por cotejar» indica que la presencia del documento específico sigue pendiente de confirmar.');
   const guide = processGuides[topic];
   const grid = element('div', '', 'coverage-grid');
-  function documentSection(title, entries) {
+  function documentSection(title, entries, offered = []) {
     const section = element('section', '', 'coverage-stage');
     section.append(element('h3', title));
     const list = element('ul');
     for (const [name, status, description, target] of entries) {
       const item = element('li');
       item.append(element('span', status, 'coverage-status'), element('strong', name, 'coverage-title'), element('p', description));
-      if (target) {
+      if (target && !offered.includes(target)) {
         const resource = element('a', 'Consultar ' + name);
         resource.href = link(target);
         item.append(resource);
@@ -123,35 +118,30 @@ function renderStateCoverage(panel, data, topic) {
     section.append(list);
     return section;
   }
-  for (const [title, entries] of sections[topic] ?? rows) grid.append(documentSection(title, entries));
-  const sources = element('div', '', 'coverage-sources');
-  for (const [title, url] of (guide ? (guide.sources ?? []) : [
-    ['INE · Calendario y etapas locales', 'https://ine.mx/voto-y-elecciones/elecciones-locales-2026/elecciones-locales-2026-etapas/'],
-    ['INE · Actividades federales 2026–2027', 'https://ine.mx/voto-y-elecciones/elecciones-2027/actividades-2027/'],
-    ['INE · Dictamen y resolución', 'https://repositoriodocumental.ine.mx/xmlui/handle/123456789/166167'],
-    ['TEPJF · Ejemplo de impugnación, SUP-RAP-80/2021', 'https://www.te.gob.mx/media/SentenciasN/pdf/Superior/SUP-RAP-0080-2021.pdf'],
-  ])) {
-    const anchor = element('a',title);
-    anchor.href = url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener';
-    sources.append(anchor);
+  const sourceRows=new Map();
+  for (const [label,description,href] of inePublications(topic,data.code)){
+    const previous=sourceRows.get(href);
+    if(previous)previous.descriptions.add(description);
+    else sourceRows.set(href,{label,descriptions:new Set([description])});
   }
-  const official = element('details', '', 'ine-series');
-  official.append(element('summary', 'Publicaciones oficiales para este proceso'));
-  const publications = element('ul');
-  for (const [label, description, href] of inePublications(topic, data.code)) {
-    const item = element('li');
-    const anchor = element('a', label);
-    anchor.href = href;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener';
-    item.append(anchor, element('p', description));
+  for (const [label,href] of guide?.sources??[]) {
+    if(!sourceRows.has(href))sourceRows.set(href,{label,descriptions:new Set()});
+  }
+  const publications=element('ul');
+  for(const [href,{label,descriptions}] of sourceRows){
+    const item=element('li');
+    item.append(processSource(label,href));
+    if(descriptions.size)item.append(element('p',[...descriptions].join(' ')));
     publications.append(item);
   }
-  official.append(publications);
+  function referenceSection(label,...children){
+    const details=element('details','','process-reference ine-series');
+    details.append(element('summary',label),publications,...children.filter(Boolean));
+    return details;
+  }
   if (!guide) {
-    panel.replaceChildren(note,grid,official,sources);
+    for (const entry of rows) grid.append(documentSection(...entry));
+    panel.replaceChildren(note,grid,referenceSection('Fuentes oficiales'));
     return;
   }
   const routeList = renderProcessRoutes(topic,data.code);
@@ -164,8 +154,7 @@ function renderStateCoverage(panel, data, topic) {
       ['Respuesta y anexos de primera vuelta',pending,'Respuesta presentada, acuse y correspondencia de anexos por numeral.'],
       ['Respuesta y anexos de segunda vuelta',pending,'Respuesta presentada, acuse y anexos asociados a los numerales de la segunda vuelta.'],
     ]);
-    const references=element('details','','process-reference');
-    references.append(element('summary','Referencias de la revisión anual'),routeList,catalogueLink,official,sources);
+    const references=referenceSection('Referencias de la revisión anual',routeList,catalogueLink);
     const reconciliation=element('section','','annual-reconciliation');
     reconciliation.append(
       element('p','Cruza evidencia y respuesta con la valoración de la UTF. Identifica por separado el monto observado, el residual y la determinación de la resolución.'),
@@ -185,7 +174,7 @@ function renderStateCoverage(panel, data, topic) {
   }
   const copy = {
     organizacion:['Documentos de la elección','Marco local, OPLE, plan, candidaturas y constancias de resultados.','Cargos y medios locales','Secuencia por cargo y vías de defensa que corresponde cotejar en la entidad.'],
-    fiscalizacion:['Informes, oficios y resoluciones','Actuaciones de fiscalización por etapa.','Rutas de fiscalización electoral','Precampaña, campaña, registro de operaciones y seguimiento.'],
+    fiscalizacion:['Informes, oficios y resoluciones','Documentos del sujeto obligado y actuaciones de la autoridad por etapa.','Rutas de fiscalización electoral','Precampaña, campaña, registro de operaciones y seguimiento.'],
     defensa:['Documentos de defensa','Acto, pruebas, demanda, acuse, sentencia y constancias de cumplimiento.','Vías y actuaciones de defensa','Medios federales y de la entidad, más guías por documento recibido.'],
     partido:['Documentos del partido','Registro, nombramientos, padrón, convenios y obligaciones.','Trámites del partido','Constitución, afiliación, representación, candidaturas y prerrogativas.'],
     extraordinaria:['Documentos de la elección extraordinaria','Acto de origen, convocatoria y calendario por cargo y demarcación.','Ruta de una elección extraordinaria','Cómo seguir un proceso extraordinario y documentar su cierre.'],
@@ -203,20 +192,20 @@ function renderStateCoverage(panel, data, topic) {
     fiscalizacion:[['Consultar acuerdos y topes','Elige etapa y cargo para comparar los montos registrados.','topes','limits']],
     defensa:[['Sentencias y jurisprudencia','Abre los índices y carpetas disponibles en el Acervo.','exp','search']],
   };
+  const direct = resources[topic]??[];
+  for (const [title,entries] of sections[topic]??rows) {
+    grid.append(documentSection(title,entries,direct.map(([, ,target])=>target)));
+  }
   const content = [
-    ...((resources[topic]??[]).map(([label,description,target,icon])=>[label,description,link(target),icon])),
+    ...direct.map(([label,description,target,icon])=>[label,description,link(target),icon]),
     [docsTitle,docsText,[note,grid],'file'],
     ...(routeList ? [[detailTitle,detailText,[routeList,catalogueLink],topic==='defensa'?'law':topic==='organizacion'?'map':'tree']] : []),
-    ['Publicaciones y fuentes oficiales','Enlaces al INE, a la autoridad local y a las referencias aplicables.',[official,sources],'sources'],
   ];
   if (topic === 'fiscalizacion') {
-    const references=element('details','','process-reference');
-    references.append(element('summary','Referencias de fiscalización'),routeList,catalogueLink,official,sources);
-    panel.replaceChildren(renderSectionViews([
-      content[0],
-      ['Informes, oficios y resoluciones','Documentos del sujeto obligado y actuaciones de la autoridad por etapa.',[documentSection(...fiscalInputs)],'file'],
-    ]),references);
+    panel.replaceChildren(renderSectionViews(content.slice(0,2)),
+      referenceSection('Referencias de fiscalización',routeList,catalogueLink));
+
     return;
   }
-  panel.replaceChildren(renderSectionViews(content));
+  panel.replaceChildren(renderSectionViews(content),referenceSection('Fuentes oficiales'));
 }
