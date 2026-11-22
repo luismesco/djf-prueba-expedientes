@@ -72,39 +72,62 @@ function addProcessStages(view,topic,link) {
   const menu=view.querySelector(':scope > .process-card-menu');
   const cards=[...menu.querySelectorAll(':scope > .process-card')];
   const destinations=cards.map(card=>card.getAttribute('href'));
-  const controls=processElement('div','','eyo-stage-controls');
+  const controls=processElement('div','','process-stage-selector');
   controls.setAttribute('role','group');
   controls.setAttribute('aria-label','Etapas del proceso');
   const context=processElement('section','','process-stage-context');
   const current=new URLSearchParams(location.search).get('fase');
   const options=[['','Todas las etapas','',cards.map((_,i)=>i)],...stages];
-  const buttons=options.map(([key,label])=>{
-    const button=processElement('button',label);
+  const select=processElement('select');
+  select.setAttribute('aria-label','Etapa activa');
+  for(const [key,label] of options){
+    const option=processElement('option',label);
+    option.value=key;
+    select.append(option);
+  }
+  function activate(key){
+    const url=new URL(location.href);
+    if(key)url.searchParams.set('fase',key);
+    else url.searchParams.delete('fase');
+    history.replaceState(history.state,'',url);
+    show(key);
+  }
+  function arrow(label,path,step){
+    const button=processElement('button');
     button.type='button';
-    controls.append(button);
+    button.setAttribute('aria-label',label);
+    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="'+path+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     button.addEventListener('click',()=>{
-      const url=new URL(location.href);
-      if(key)url.searchParams.set('fase',key);
-      else url.searchParams.delete('fase');
-      history.replaceState(history.state,'',url);
-      show(key);
+      if(button.getAttribute('aria-disabled')==='true')return;
+      activate(options[select.selectedIndex+step][0]);
     });
     return button;
-  });
+  }
+  const previous=arrow('Etapa anterior','m15 6-6 6 6 6',-1);
+  const next=arrow('Etapa siguiente','m9 6 6 6-6 6',1);
+  select.addEventListener('change',()=>activate(select.value));
+  controls.append(previous,select,next);
+  const status=processElement('span','','process-stage-status');
+  status.setAttribute('role','status');
+  controls.append(status);
   const section=processElement('section','','process-stages');
   section.setAttribute('aria-label','Atención por etapa');
   section.hidden=menu.hidden;
   section.append(controls,context);
   menu.before(section);
   function show(key){
-    const index=options.findIndex(([phase])=>phase===key);
-    const [,label,summary,visible,related]=options[Math.max(index,0)];
-    buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===Math.max(index,0))));
+    const index=Math.max(options.findIndex(([phase])=>phase===key),0);
+    const [phase,label,summary,visible,related]=options[index];
+    key=phase;
+    select.selectedIndex=index;
+    previous.setAttribute('aria-disabled',String(index<=1));
+    next.setAttribute('aria-disabled',String(index===options.length-1));
+    status.textContent=label;
     announceToolContext(topic,summary?label:'',summary?key:'');
     context.hidden=!summary;
     context.replaceChildren();
     if(summary){
-      context.append(processElement('h3',label),processElement('p',summary));
+      context.append(processElement('p',summary));
       if(related){
         const resource=processElement('a',related==='defensa'?'Abrir impugnaciones y cumplimiento':'Abrir fiscalización electoral');
         resource.href=link(related,related==='fiscalizacion'&&['precampana','campana'].includes(key)?{fase:key}:{});
