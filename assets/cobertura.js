@@ -92,6 +92,51 @@ const processGuides = {
   },
 };
 
+const processExamples = {
+  anual: ['DEMO-IA-01 · Revisión de un informe anual', [
+    ['Observación de primera vuelta', 'El oficio de muestra solicita aclarar una operación y aportar su soporte.'],
+    ['Respuesta y evidencias', 'Escrito de aclaración, póliza, comprobante y acuse vinculados al numeral.'],
+    ['Seguimiento de segunda vuelta', 'Cruce con la primera observación y registro de la evidencia adicional solicitada.'],
+    ['Dictamen y resolución', 'La conclusión se registra por separado con el resultado y su localizador.'],
+  ]],
+  organizacion: ['DEMO-EL-01 · Seguimiento de una elección municipal', [
+    ['Preparación', 'Calendario aprobado, convocatoria e identificación de la demarcación.'],
+    ['Candidaturas', 'Acuerdos de registro y sustituciones asociados al cargo.'],
+    ['Jornada y cómputo', 'Acta de cómputo municipal y referencia a los resultados publicados.'],
+    ['Validez', 'Declaración y constancia, con espacio para anotar modificaciones posteriores.'],
+  ]],
+  fiscalizacion: ['DEMO-FIS-01 · Revisión de gastos de campaña', [
+    ['Etapa y demarcación', 'Campaña municipal. El tope se toma del acuerdo aplicable al cargo y demarcación.'],
+    ['Operación de ejemplo', 'Registro de propaganda relacionado con póliza, comprobante, pago y evidencia de exhibición.'],
+    ['Informe y revisión', 'Acuse del informe vinculado al gasto. Se registra por separado cualquier requerimiento de revisión.'],
+    ['Resultado', 'Conclusión y resolución pendientes de incorporarse al expediente de muestra.'],
+  ]],
+  defensa: ['DEMO-DEF-01 · Seguimiento de un acto impugnado', [
+    ['Acto y notificación', 'Resolución de muestra y constancia de notificación.'],
+    ['Planteamiento', 'Agravio de ejemplo por falta de valoración de una constancia, con enlace a la prueba.'],
+    ['Sentencia', 'Campos para sentido, efectos y autoridad obligada.'],
+    ['Cumplimiento', 'Acuerdo de cumplimiento y constancia de notificación, cuando se incorporen.'],
+  ]],
+  extraordinaria: ['DEMO-EXT-01 · Elección extraordinaria municipal', [
+    ['Origen', 'Sentencia y convocatoria que abren un expediente distinto del ordinario.'],
+    ['Calendario', 'Hitos y responsables del proceso extraordinario.'],
+    ['Documentación', 'Registro de candidaturas, acuerdos de fiscalización y actuaciones de jornada.'],
+    ['Cierre', 'Cómputos, validez y seguimiento de impugnaciones.'],
+  ]],
+  judicial: ['DEMO-JUD-01 · Elección de un cargo judicial', [
+    ['Ámbito y cargo', 'Identificación de la elección, cargo y demarcación judicial.'],
+    ['Preparación', 'Convocatoria, marco geográfico y listado oficial de candidaturas.'],
+    ['Jornada y cómputo', 'Materiales y publicación del cómputo correspondiente.'],
+    ['Validez', 'Declaratoria y constancia asociadas al cargo y demarcación.'],
+  ]],
+  participacion: ['DEMO-PAR-01 · Integración territorial de una consulta', [
+    ['Ejercicio', 'Convocatoria y ámbito del mecanismo de participación.'],
+    ['Organización', 'Calendario, materiales y ubicación de mesas receptoras.'],
+    ['Resultados', 'Actas y cómputos asociados a cada demarcación.'],
+    ['Cierre', 'Publicación definitiva y determinaciones posteriores, cuando existan.'],
+  ]],
+};
+
 function renderStateCoverage(panel, data, topic) {
   const {state, offices, dictamen, norms, ople, plans, limits, cargos, recentDecisions, historicalDecisions, link} = data;
   const linked = value => value ? 'En el acervo' : 'Sin enlace en el acervo';
@@ -174,6 +219,19 @@ function renderStateCoverage(panel, data, topic) {
       }
     }
   }
+  const example = processExamples[topic];
+  const examplePanel = element('section', '', 'coverage-example');
+  if (example) {
+    const [title, fields] = example;
+    examplePanel.append(element('h3','Expediente de muestra'), element('p', title));
+    const list = element('dl');
+    for (const [label,value] of fields) {
+      const row = element('div');
+      row.append(element('dt', label), element('dd', value));
+      list.append(row);
+    }
+    examplePanel.append(list);
+  }
   const grid = element('div', '', 'coverage-grid');
   for (const [title, entries] of sections[topic] ?? rows) {
     const section = element('section', '', 'coverage-stage');
@@ -218,5 +276,5 @@ function renderStateCoverage(panel, data, topic) {
     publications.append(item);
   }
   official.append(publications);
-  panel.replaceChildren(...(guide ? [workflow, element('h3', 'Documentos y cobertura')] : []), note, grid, official, sources);
+  panel.replaceChildren(...(guide ? [workflow, ...(example ? [examplePanel] : []), element('h3', 'Documentos y cobertura')] : []), note, grid, official, sources);
 }

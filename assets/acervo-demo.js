@@ -2,6 +2,7 @@
   const query = new URLSearchParams(location.search);
   const code = query.get('entidad');
   const topic = query.get('tema');
+  const embedded = query.get('panel') === '1' && window.parent !== window;
   const aliases = {CAM: 'CAMP', TAM: 'TAMPS', TAMP: 'TAMPS'};
   const id = Number(Object.keys(EST).find(key => (aliases[EST[key]] ?? EST[key]) === code));
   const processes = new Set(Object.keys(processGuides));
@@ -16,11 +17,12 @@
     a.href = href;
     return a;
   };
-  const index = './index.html?v=orden-2';
+  const index = './index.html?v=contenido-1';
   const from = processes.has(topic) ? topic : query.get('proceso');
   const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target, v: 'orden-2'});
+    const params = new URLSearchParams({entidad: code, tema: target, v: 'contenido-1'});
     if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
+    if (embedded) params.set('panel','1');
     return './consulta.html?' + params;
   };
   const setBackLinks = (back, backLabel) => {
@@ -33,7 +35,7 @@
     heading.textContent = text;
     heading.tabIndex = -1;
     pane.prepend(heading);
-    heading.focus({preventScroll: true});
+    if (!embedded) heading.focus({preventScroll: true});
   };
   if (topic === 'federal') {
     openFicha(DATA[0].code, false);
@@ -98,5 +100,29 @@
   } else {
     if (topic === 'exp') document.getElementById('expForm')?.remove();
     contextTitle(name, panel);
+  }
+  if (embedded) {
+    const content = document.createElement('main');
+    content.id = 'djf-section-content';
+    content.setAttribute('aria-label','Contenido de la sección');
+    if (!processes.has(topic)) {
+      const back = document.querySelector('#detailBar a');
+      if (back) {
+        if (!new URL(back.href).searchParams.has('panel')) back.target = '_top';
+        content.append(back);
+      }
+    }
+    content.append(panel);
+    for (const link of content.querySelectorAll('a[href]')) {
+      const target = new URL(link.href);
+      if (target.pathname.endsWith('/mesa.html')) {
+        target.searchParams.set('panel','1');
+        target.searchParams.set('v','contenido-1');
+        link.href = target.href;
+      }
+    }
+    document.body.append(content);
+    document.body.classList.add('djf-embedded-section');
+    observeSectionHeight(content);
   }
 })();

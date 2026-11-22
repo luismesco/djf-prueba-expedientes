@@ -13,18 +13,20 @@ function render(focus = false) {
     picker.value = code;
     entity.textContent = name;
     for (const link of document.querySelectorAll('[data-topic]')) {
-      const params = new URLSearchParams({entidad: code, tema: link.dataset.topic, v: 'orden-2'});
+      const params = new URLSearchParams({entidad: code, tema: link.dataset.topic, v: 'contenido-1'});
       if (link.dataset.view) params.set('vista', link.dataset.view);
       link.href = './consulta.html?' + params;
     }
   }
   if (focus) (name ? entity : document.getElementById('demo-map-title')).focus();
+  document.dispatchEvent(new Event('djf:entidad'));
 }
 
 function select(code) {
   if (!entries.has(code)) return;
   const url = new URL(location.href);
   url.searchParams.set('entidad', code);
+  url.searchParams.delete('seccion');
   history.pushState(null, '', url);
   render(true);
 }
@@ -43,6 +45,7 @@ document.getElementById('demo-back-map').addEventListener('click', event => {
   event.preventDefault();
   const url = new URL(location.href);
   url.searchParams.delete('entidad');
+  url.searchParams.delete('seccion');
   history.pushState(null, '', url);
   render(true);
 });
