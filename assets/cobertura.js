@@ -1,4 +1,48 @@
+const specialProcessGuides = {
+  extraordinaria: {
+    title: 'Elecciones extraordinarias',
+    outcome: 'Expediente del proceso extraordinario, vinculado al acto que lo origina y a los resultados de su propia elección.',
+    steps: [
+      ['Acreditar el origen', 'Identifica la sentencia o el supuesto que motivó la convocatoria y la demarcación a la que afecta.'],
+      ['Abrir calendario propio', 'Integra convocatoria, plan, calendario y convenios de coordinación del proceso extraordinario.'],
+      ['Dar seguimiento por etapa', 'Vincula registros, topes, informes de fiscalización y actuaciones de jornada según el calendario aprobado.'],
+      ['Cerrar con resultados', 'Integra cómputos, constancias, impugnaciones y cumplimiento, en su caso.'],
+    ],
+  },
+  judicial: {
+    title: 'Elecciones judiciales',
+    outcome: 'Expediente por ámbito, cargo y demarcación judicial, con resultados y constancias oficiales.',
+    steps: [
+      ['Confirmar ámbito y participación', 'Verifica el ciclo y si se trata de elección judicial federal o local. Confirma si la entidad participa antes de abrir expediente local.'],
+      ['Integrar organización del proceso', 'Reúne convocatoria, marco geográfico, cargos, calendario y acuerdos de coordinación.'],
+      ['Vincular candidaturas y publicaciones', 'Incorpora listados oficiales, materiales, reglas de campaña y documentación de fiscalización del proceso, cuando proceda.'],
+      ['Cotejar cómputos y validez', 'Registra tipo de cómputo, declaratoria, constancias y resoluciones aplicables.'],
+    ],
+  },
+  participacion: {
+    title: 'Consulta popular y revocación de mandato',
+    outcome: 'Expediente por ejercicio y ámbito, con el fundamento, la documentación territorial aplicable y la publicación del cómputo.',
+    steps: [
+      ['Identificar el ejercicio', 'Revisa instrumento, ámbito, convocatoria y calendario. Usa la entidad como referencia territorial cuando el ejercicio sea federal.'],
+      ['Integrar documentos preparatorios', 'Agrega reglas, materiales, acuerdos de organización y, si procede, constancias de apoyo ciudadano.'],
+      ['Registrar jornada y cómputos', 'Asocia las actas y resultados a la demarcación y al órgano que los emite.'],
+      ['Conservar el cierre', 'Agrega cómputo definitivo, actos de validez o determinaciones posteriores, según el ejercicio.'],
+    ],
+  },
+  sancionadores: {
+    title: 'Quejas y procedimientos sancionadores',
+    outcome: 'Expediente con vía, autoridad, hechos, pruebas, actuaciones, resolución y seguimiento.',
+    steps: [
+      ['Identificar la vía', 'Registra materia, hechos, autoridad y número de expediente. Distingue queja, procedimiento oficioso y revisión de informes.'],
+      ['Integrar actuaciones', 'Reúne escrito inicial o acuerdo de inicio, pruebas, acuerdos, notificaciones y contestaciones.'],
+      ['Seguir sustanciación y resolución', 'Documenta diligencias y medidas cuando existan, y conserva la resolución con sus efectos.'],
+      ['Vincular impugnación y cumplimiento', 'Relaciona la sentencia, si existe, y las constancias que acrediten los actos de cumplimiento.'],
+    ],
+  },
+};
+
 const processGuides = {
+  ...specialProcessGuides,
   anual: {
     title: 'Fiscalización del informe anual',
     outcome: 'Expediente enlazado por numeral y conclusión, con el resultado de la revisión, la resolución y los pendientes de seguimiento.',
@@ -95,6 +139,10 @@ function renderStateCoverage(panel, data, topic) {
     fiscalizacion: [rows[1], fiscalInputs],
     defensa: [rows[3]],
     anual: [rows[4]],
+    extraordinaria: [['Documentos del proceso extraordinario', [['Aplicabilidad, convocatoria y calendario', pending, 'Verifica primero la existencia de un proceso extraordinario para la entidad, demarcación y ciclo elegidos.']]]],
+    judicial: [['Documentos de la elección judicial', [['Ámbito y proceso aplicable', pending, 'Confirma si el expediente es federal o local y si corresponde a la entidad y al ciclo consultados.']]]],
+    participacion: [['Documentos del ejercicio de participación', [['Convocatoria, actos y resultados territoriales', pending, 'Confirma el ejercicio y conserva su identificación propia.']]]],
+    sancionadores: [['Documentos del procedimiento', [['Vía, expediente y resolución', pending, 'Localiza la referencia individual antes de registrar un procedimiento como incorporado.']]]],
   };
   const element = (tag, text, className) => {
     const node = document.createElement(tag);
@@ -106,6 +154,7 @@ function renderStateCoverage(panel, data, topic) {
   const guide = processGuides[topic];
   const workflow = element('section', '', 'coverage-workflow');
   if (guide) {
+    workflow.append(element('p', 'Identifica el expediente por entidad, ciclo o ejercicio y ámbito. Agrega el cargo y la demarcación cuando correspondan. Vincula los acuerdos federales aplicables por clave.'));
     workflow.append(element('h3', 'Cómo se trabaja'));
     const steps = element('ol');
     for (const [title, description] of guide.steps) {
@@ -144,7 +193,7 @@ function renderStateCoverage(panel, data, topic) {
     grid.append(section);
   }
   const sources = element('div', '', 'coverage-sources');
-  for (const [title, url] of (guide?.sources ?? [
+  for (const [title, url] of (guide ? (guide.sources ?? []) : [
     ['INE · Calendario y etapas locales', 'https://ine.mx/voto-y-elecciones/elecciones-locales-2026/elecciones-locales-2026-etapas/'],
     ['INE · Actividades federales 2026–2027', 'https://ine.mx/voto-y-elecciones/elecciones-2027/actividades-2027/'],
     ['INE · Dictamen y resolución', 'https://repositoriodocumental.ine.mx/xmlui/handle/123456789/166167'],
@@ -156,5 +205,18 @@ function renderStateCoverage(panel, data, topic) {
     anchor.rel = 'noopener';
     sources.append(anchor);
   }
-  panel.replaceChildren(...(guide ? [workflow, element('h3', 'Documentos y cobertura')] : []), note, grid, sources);
+  const official = element('details', '', 'ine-series');
+  official.append(element('summary', 'Publicaciones oficiales para este proceso'));
+  const publications = element('ul');
+  for (const [label, description, href] of inePublications(topic, data.code)) {
+    const item = element('li');
+    const anchor = element('a', label);
+    anchor.href = href;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+    item.append(anchor, element('p', description));
+    publications.append(item);
+  }
+  official.append(publications);
+  panel.replaceChildren(...(guide ? [workflow, element('h3', 'Documentos y cobertura')] : []), note, grid, official, sources);
 }

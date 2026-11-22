@@ -4,7 +4,7 @@
   const topic = query.get('tema');
   const aliases = {CAM: 'CAMP', TAM: 'TAMPS', TAMP: 'TAMPS'};
   const id = Number(Object.keys(EST).find(key => (aliases[EST[key]] ?? EST[key]) === code));
-  const processes = new Set(['anual', 'organizacion', 'fiscalizacion', 'defensa']);
+  const processes = new Set(Object.keys(processGuides));
   const panes = new Map([
     ['cobertura', 'b-eyo'], ['oficios', 'b-eyo'], ['primera', 'b-eyo'], ['segunda', 'b-eyo'], ['dictamen', 'b-eyo'],
     ['norm', 'b-norm'], ['ople', 'b-ople'], ['topes', 'b-topes'], ['exp', 'b-exp'], ['planes', 'b-ople'],
