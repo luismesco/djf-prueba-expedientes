@@ -13,7 +13,7 @@
       <label for="demo-state">Entidad federativa</label>
       <select id="demo-state" name="entidad" required><option value="">Selecciona una entidad</option><option value="AGS">Aguascalientes</option><option value="BC">Baja California</option><option value="BCS">Baja California Sur</option><option value="CAMP">Campeche</option><option value="CHIS">Chiapas</option><option value="CHIH">Chihuahua</option><option value="CDMX">Ciudad de México</option><option value="COAH">Coahuila</option><option value="COL">Colima</option><option value="DGO">Durango</option><option value="MEX">Estado de México</option><option value="GTO">Guanajuato</option><option value="GRO">Guerrero</option><option value="HGO">Hidalgo</option><option value="JAL">Jalisco</option><option value="MICH">Michoacán</option><option value="MOR">Morelos</option><option value="NAY">Nayarit</option><option value="NL">Nuevo León</option><option value="OAX">Oaxaca</option><option value="PUE">Puebla</option><option value="QRO">Querétaro</option><option value="QROO">Quintana Roo</option><option value="SLP">San Luis Potosí</option><option value="SIN">Sinaloa</option><option value="SON">Sonora</option><option value="TAB">Tabasco</option><option value="TAMPS">Tamaulipas</option><option value="TLAX">Tlaxcala</option><option value="VER">Veracruz</option><option value="YUC">Yucatán</option><option value="ZAC">Zacatecas</option></select>
       <button type="submit" class="demo-primary">Ver opciones</button>
-      <p>También puedes elegir una entidad en el mapa.</p>
+      <p>También puedes elegir una entidad en el mapa.</p><a href="./consulta.html?tema=federal">Oficios del ámbito federal</a>
     </form>
   </div>
 </section>
@@ -22,10 +22,14 @@
   <h2 id="demo-entity" tabindex="-1"></h2>
   <p>Expediente estatal · Informe anual 2025</p>
   <nav aria-label="Opciones del expediente" id="demo-case-links">
-    <a href="./oficios.html"><strong>Errores y Omisiones</strong><span>Oficios de primera y segunda vuelta</span></a>
-    <a href="./mesa.html"><strong>Mesa de análisis</strong><span>Consultar las observaciones del expediente</span></a>
+    <a data-topic="oficios"><strong>Errores y Omisiones</strong><span>Primera vuelta, segunda vuelta y dictamen</span></a>
+    <a data-topic="norm"><strong>Normatividad</strong><span>Normativa local</span></a>
+    <a data-topic="ople"><strong>OPLE</strong><span>Publicaciones, acuerdos y estrados</span></a>
+    <a data-topic="topes"><strong>Topes de campaña</strong><span>Acuerdos y montos por etapa</span></a>
+    <a data-topic="exp"><strong>Expedientes y criterios</strong><span>Sentencias y jurisprudencia en el Acervo</span></a>
+    <a data-topic="planes"><strong>Planes 2026–2027</strong><span>Planes, numeralia y plataformas</span></a>
+    <a id="demo-desk" href="./mesa.html"><strong>Mesa de análisis</strong><span>Expediente de muestra de Quintana Roo</span></a>
   </nav>
-  <p id="demo-unavailable" hidden>En esta vista de prueba, Quintana Roo tiene opciones de consulta y oficios de muestra.</p>
 </section>
-<p class="demo-notice">Vista de prueba · Documentos de muestra</p>
+<p class="demo-notice">Vista de prueba · Consulta documental y mesa de análisis de muestra</p>
 </main><script src="./assets/mapa-demo.js" defer></script></body></html>

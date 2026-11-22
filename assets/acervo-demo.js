@@ -1,0 +1,77 @@
+(() => {
+  const query = new URLSearchParams(location.search);
+  const code = query.get('entidad');
+  const topic = query.get('tema');
+  const aliases = {CAM: 'CAMP', TAM: 'TAMPS', TAMP: 'TAMPS'};
+  const id = Number(Object.keys(EST).find(key => (aliases[EST[key]] ?? EST[key]) === code));
+  const panes = new Map([
+    ['oficios', 'b-eyo'], ['primera', 'b-eyo'], ['segunda', 'b-eyo'], ['dictamen', 'b-eyo'],
+    ['norm', 'b-norm'], ['ople', 'b-ople'], ['topes', 'b-topes'], ['exp', 'b-exp'], ['planes', 'b-ople'],
+  ]);
+  const sourceLink = (label, href) => {
+    const a = document.createElement('a');
+    a.className = 'btn-ghost';
+    a.textContent = label;
+    a.href = href;
+    return a;
+  };
+  const index = './index.html';
+  const topicHref = target => './consulta.html?' + new URLSearchParams({entidad: code, tema: target});
+  const setBackLinks = (back, backLabel) => {
+    document.getElementById('detailBar').replaceChildren(
+      sourceLink(backLabel, back), sourceLink('Volver al mapa', index),
+    );
+  };
+  const contextTitle = (text, pane) => {
+    const heading = document.createElement('h2');
+    heading.textContent = text;
+    heading.tabIndex = -1;
+    pane.prepend(heading);
+    heading.focus({preventScroll: true});
+  };
+  if (topic === 'federal') {
+    openFicha(DATA[0].code, false);
+    goStep('detalle', 'b-eyo');
+    const panel = document.getElementById('b-eyo');
+    const federal = document.getElementById('eyoFederal');
+    panel.replaceChildren(federal);
+    contextTitle('Oficios del ámbito federal', panel);
+    setBackLinks(index, 'Volver a Expedientes');
+    return;
+  }
+  if (!id || !panes.has(topic)) {
+    location.replace(index);
+    return;
+  }
+  openFicha(id, false);
+  const block = panes.get(topic);
+  goStep('detalle', block);
+  const panel = document.getElementById(block);
+  const caseHref = index + '?' + new URLSearchParams({entidad: code});
+  const name = DATA.find(row => row.code === id).name;
+  setBackLinks(caseHref, 'Volver a las opciones de ' + name);
+  if (topic === 'oficios') {
+    const choices = document.createElement('nav');
+    choices.className = 'chips';
+    choices.setAttribute('aria-label', 'Oficios por vuelta');
+    for (const [key,label] of [['primera','Primera vuelta'],['segunda','Segunda vuelta'],['dictamen','Dictamen consolidado']]) {
+      choices.append(sourceLink(label, topicHref(key)));
+    }
+    panel.replaceChildren(choices);
+    contextTitle(name + ' · Errores y Omisiones', panel);
+  } else if (['primera','segunda','dictamen'].includes(topic)) {
+    const rounds = ['primera','segunda','dictamen'];
+    const n = rounds.indexOf(topic);
+    const rows = [...document.getElementById('eyoContent').children];
+    panel.replaceChildren(rows[n*2], rows[n*2+1]);
+    contextTitle(name + ' · Errores y Omisiones', panel);
+    setBackLinks(topicHref('oficios'), 'Volver a Errores y Omisiones');
+  } else if (topic === 'planes') {
+    const plans = document.getElementById('oplePlanes');
+    panel.replaceChildren(plans);
+    contextTitle(name + ' · Planes 2026–2027', panel);
+  } else {
+    if (topic === 'exp') document.getElementById('expForm')?.remove();
+    contextTitle(name, panel);
+  }
+})();

@@ -12,8 +12,10 @@ function render(focus = false) {
   if (name) {
     picker.value = code;
     entity.textContent = name;
-    document.getElementById('demo-case-links').hidden = code !== 'QROO';
-    document.getElementById('demo-unavailable').hidden = code === 'QROO';
+    for (const link of document.querySelectorAll('[data-topic]')) {
+      link.href = './consulta.html?' + new URLSearchParams({entidad: code, tema: link.dataset.topic});
+    }
+    document.getElementById('demo-desk').hidden = code !== 'QROO';
   }
   if (focus) (name ? entity : document.getElementById('demo-map-title')).focus();
 }
