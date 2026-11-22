@@ -27,3 +27,4 @@
 #demo-case-links a strong,#demo-case-links a span{grid-column:2}
 .demo-special{max-width:31rem;margin-top:1rem;border:1px solid #e7dfe3;border-radius:8px;padding:0 .85rem}.demo-special summary{cursor:pointer;min-height:44px;align-content:center;font-weight:700;color:#6d1738}.demo-special nav{display:grid;gap:.25rem;padding-bottom:.75rem}.demo-special nav a{display:flex;align-items:center;min-height:44px;color:#6d1738}
 .demo-special .demo-topic-icon{width:2rem;height:2rem;padding:.35rem;margin-right:.55rem;flex:none}
+#demo-case-links a[data-topic="sancionadores"]{border-color:#c68da3;background:#f5e8ee}

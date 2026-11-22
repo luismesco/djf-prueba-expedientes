@@ -73,6 +73,7 @@
       link: topicHref,
       code,
     }, topic);
+    if (topic === 'sancionadores') attachComplaintDesk(panel, code);
     contextTitle(name + ' · ' + (processes.has(topic) ? processGuides[topic].title : 'Documentos por proceso'), panel);
   } else if (topic === 'oficios') {
     const choices = document.createElement('nav');
