@@ -193,13 +193,23 @@
   box-shadow: inset 0 1px 1px #fff, 0 1px 3px #611a3c16;
 }
 
-.djf-tools-grid small {
-  display: block;
-  margin-top: .16rem;
-  color: var(--tools-muted);
-  font-size: .77rem;
-  font-weight: 500;
-  line-height: 1.35;
+.djf-tools-list {
+  border-top: 1px solid #b9849f45;
+  margin-top: .35rem;
+}
+
+.djf-tools-list summary {
+  align-content: center;
+  min-height: 44px;
+  padding: .3rem .45rem;
+  color: var(--tools-accent);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.djf-tools-list summary:focus-visible {
+  outline: 3px solid #7a5016;
+  outline-offset: 2px;
 }
 
 .djf-tools-dialog:not([open]),

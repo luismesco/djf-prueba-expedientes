@@ -16,20 +16,20 @@
   };
   const icon=key=>'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="'+iconPaths[key]+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const catalog=[
-    ['morenai','MorenAI','Consulta jurídica con contexto y fuentes'],
-    ['audio','Transcripción de audio','Reproducir, marcar tiempos y revisar texto'],
-    ['oficio','Generar oficio','Redactar y descargar un borrador editable'],
-    ['comparar','Comparar versiones','Identificar diferencias entre dos textos'],
-    ['pruebas','Matriz probatoria','Cruzar hechos, documentos y localizadores'],
-    ['plazos','Notificaciones y plazos','Abrir seguimiento de la entidad'],
-    ['jurisprudencia','Sentencias y jurisprudencia','Índices y expedientes del acervo por entidad'],
-    ['normas','Normativa y OPLE','Legislación local, acuerdos, estrados y planes'],
-    ['fuentes','Fuentes oficiales y formatos','Publicaciones del apartado y formatos DJF'],
+    ['morenai','MorenAI'],
+    ['audio','Transcripción de audio'],
+    ['oficio','Generar oficio'],
+    ['comparar','Comparar versiones'],
+    ['pruebas','Matriz probatoria'],
+    ['plazos','Notificaciones y plazos'],
+    ['jurisprudencia','Sentencias y jurisprudencia'],
+    ['normas','Normativa y OPLE'],
+    ['fuentes','Fuentes oficiales y formatos'],
   ];
   const dialog=document.createElement('dialog');
   dialog.className='djf-tools-dialog';
   dialog.setAttribute('aria-labelledby','djf-tools-title');
-  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas de trabajo</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><div class="djf-tools-list"><div class="djf-tools-grid"></div></div><section class="djf-tool-pane" hidden></section>';
+  dialog.innerHTML='<div class="djf-tools-head"><h2 id="djf-tools-title">Herramientas</h2><button type="button" data-close aria-label="Cerrar herramientas">'+icon('close')+'</button></div><p class="djf-tool-state"></p><section class="djf-tools-context" hidden><h3>Para este apartado</h3><div class="djf-tools-grid"></div></section><details class="djf-tools-list"><summary>Más herramientas</summary><div class="djf-tools-grid"></div></details><section class="djf-tool-pane" hidden></section>';
   const launch=document.createElement('button');
   launch.type='button';
   launch.className='djf-tools-launch';
@@ -113,8 +113,9 @@
     const parts=[entity,sectionTitle,context.phase].filter(Boolean);
     dialog.querySelector('.djf-tool-state').textContent=parts.join(' · ')||'Expedientes DJF';
     const phases=Object.hasOwn(contextByPhase,context.topic)?contextByPhase[context.topic]:{};
-    const keys=Object.hasOwn(phases,context.phaseKey)?phases[context.phaseKey]:
-      Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:[];
+    const preferred=Object.hasOwn(phases,context.phaseKey)?phases[context.phaseKey]:
+      Object.hasOwn(contextByTopic,context.topic)?contextByTopic[context.topic]:['morenai','jurisprudencia','normas'];
+    const keys=preferred.slice(0,3);
     for(const [key,button] of toolButtons)if(!keys.includes(key))grid.append(button);
     for(const key of keys)recommended.append(toolButtons.get(key));
     related.hidden=!keys.length||!pane.hidden;
@@ -272,9 +273,9 @@
     }
     title.focus();
   }
-  for(const [key,title,description] of catalog){
+  for(const [key,title] of catalog){
     const button=control(title,()=>open(key,title));
-    button.innerHTML=icon(key)+'<span>'+title+'<small>'+description+'</small></span>';
+    button.innerHTML=icon(key)+'<span>'+title+'</span>';
     toolButtons.set(key,button);
     grid.append(button);
   }
@@ -301,6 +302,7 @@
   dialog.querySelector('[data-close]').addEventListener('click',()=>dialog.close());
   dialog.addEventListener('close',()=>{
     document.body.classList.remove('djf-tools-dock-open');
+    list.open=false;
     back();
     launch.focus();
   });
