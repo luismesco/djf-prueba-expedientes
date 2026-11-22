@@ -11,32 +11,46 @@ function processSource(title,href) {
   link.rel='noopener';
   return link;
 }
-function renderSectionViews(views) {
+function renderSectionViews(views, initial = -1) {
   const root=processElement('div','','process-views');
-  const nav=processElement('div','','process-view-controls');
-  nav.setAttribute('role','group');
-  nav.setAttribute('aria-label','Contenido de la sección');
-  root.append(nav);
-  const content=views.map(([label,children],index)=>{
-    const button=processElement('button',label);
-    button.type='button';
+  const menu=processElement('div','','process-card-menu');
+  menu.setAttribute('role','group');
+  menu.setAttribute('aria-label','Contenido de la sección');
+  const back=processElement('button','← Volver a las tarjetas','process-card-back');
+  back.type='button';
+  root.append(menu,back);
+  let active=-1;
+  const content=views.map(([label,description,children],index)=>{
+    const card=processElement(typeof children==='string'?'a':'button','','process-card');
+    card.append(processElement('strong',label),processElement('span',description));
+    menu.append(card);
+    if(typeof children==='string'){
+      card.href=children;
+      return {card};
+    }
+    card.type='button';
     const section=processElement('section','','process-view');
-    section.id='process-view-'+index;
+    const title=processElement('h3',label,'process-card-title');
+    title.tabIndex=-1;
     section.setAttribute('aria-label',label);
-    button.setAttribute('aria-controls',section.id);
-    section.append(...children);
-    nav.append(button);
+    section.append(title,...children);
     root.append(section);
-    button.addEventListener('click',()=>{
-      for(const [toggle,panel] of content){
-        panel.hidden=toggle!==button;
-        toggle.setAttribute('aria-pressed',String(toggle===button));
-      }
-    });
-    button.setAttribute('aria-pressed',String(index===0));
-    section.hidden=index!==0;
-    return [button,section];
+    card.addEventListener('click',()=>show(index,true));
+    return {card,section,title};
   });
+  function show(index,focus) {
+    const previous=active;
+    active=index;
+    menu.hidden=index>=0;
+    back.hidden=index<0;
+    content.forEach(({section},i)=>{if(section)section.hidden=i!==index;});
+    if(focus){
+      if(index>=0)content[index].title?.focus();
+      else content[previous]?.card.focus();
+    }
+  }
+  back.addEventListener('click',()=>show(-1,true));
+  show(initial,false);
   return root;
 }
 function renderCatalogueEntry(entry,source) {
@@ -127,6 +141,7 @@ function renderProcessCatalogue(panel,code) {
     status.textContent=query?matches+' resultados':'';
   });
   panel.replaceChildren(info,note,renderSectionViews([
-    ['Catálogo',[label,input,status,list]], ['Ficha de la entidad',[renderLocalProcessRoutes(code)]],
+    ['Buscador de procesos y actuaciones','57 rutas y 14 guías por documento recibido.',[label,input,status,list]],
+    ['Cargos y medios de la entidad','Secuencias por elección, vías locales por cotejar y referencias estatales.',[renderLocalProcessRoutes(code)]],
   ]));
 }

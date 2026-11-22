@@ -17,10 +17,10 @@
     a.href = href;
     return a;
   };
-  const index = './index.html?v=resumen-1';
+  const index = './index.html?v=tarjetas-1';
   const from = processes.has(topic) ? topic : query.get('proceso');
   const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target, v: 'resumen-1'});
+    const params = new URLSearchParams({entidad: code, tema: target, v: 'tarjetas-1'});
     if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
     if (embedded) params.set('panel','1');
     return './consulta.html?' + params;
@@ -81,13 +81,11 @@
     if (topic === 'sancionadores') attachComplaintDesk(panel, code);
     contextTitle(name + ' · ' + (processes.has(topic) ? processGuides[topic].title : 'Documentos por proceso'), panel);
   } else if (topic === 'oficios') {
-    const choices = document.createElement('nav');
-    choices.className = 'chips';
-    choices.setAttribute('aria-label', 'Oficios por vuelta');
-    for (const [key,label] of [['primera','Primera vuelta'],['segunda','Segunda vuelta'],['dictamen','Dictamen consolidado']]) {
-      choices.append(sourceLink(label, topicHref(key)));
-    }
-    panel.replaceChildren(choices);
+    panel.replaceChildren(renderSectionViews([
+      ['Primera vuelta','Oficio inicial de la UTF para el Informe Anual 2025.',topicHref('primera')],
+      ['Segunda vuelta','Segundo oficio de la UTF para el mismo ejercicio.',topicHref('segunda')],
+      ['Dictamen consolidado','Consulta el dictamen de la entidad y su disponibilidad en el acervo.',topicHref('dictamen')],
+    ]));
     contextTitle(name + ' · Errores y Omisiones', panel);
   } else if (['primera','segunda','dictamen'].includes(topic)) {
     const rounds = ['primera','segunda','dictamen'];
@@ -120,7 +118,7 @@
       const target = new URL(link.href);
       if (target.pathname.endsWith('/mesa.html')) {
         target.searchParams.set('panel','1');
-        target.searchParams.set('v','resumen-1');
+        target.searchParams.set('v','tarjetas-1');
         link.href = target.href;
       }
     }

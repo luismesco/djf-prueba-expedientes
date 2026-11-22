@@ -231,9 +231,6 @@ function renderStateCoverage(panel, data, topic) {
     }
     workflow.append(steps, element('h3', 'Resultado del proceso'), element('p', guide.outcome));
     if (topic === 'anual') {
-      const officeLink = element('a', 'Consultar Errores y Omisiones');
-      officeLink.href = link('oficios');
-      workflow.append(officeLink);
       if (data.code === 'QROO') {
         const deskLink = element('a', 'Abrir Mesa de análisis de muestra');
         deskLink.href = './mesa.html';
@@ -305,11 +302,36 @@ function renderStateCoverage(panel, data, topic) {
   const routeList = renderProcessRoutes(topic,data.code);
   const catalogueLink = element('a','Abrir catálogo completo');
   catalogueLink.href = link('catalogo');
+  const copy = {
+    anual:['Pasos de la revisión anual','Del informe y su acuse a las respuestas, el dictamen y la resolución.','Cobertura del informe anual','Oficios, respuestas, anexos y determinaciones disponibles o por cotejar.','Ruta por documento recibido','Qué hacer con un oficio, una notificación, un dictamen o una resolución.'],
+    organizacion:['Calendario y etapas de la elección','Preparación, registros, jornada, cómputos y declaración de validez.','Documentos de la elección','Marco local, OPLE, plan, candidaturas y constancias de resultados.','Cargos y medios locales','Secuencia por cargo y vías de defensa que corresponde cotejar en la entidad.'],
+    fiscalizacion:['Cómo se revisan los gastos','Tope aplicable, comprobantes, informe, requerimientos y determinación.','Topes e informes por etapa','Acuerdos y montos por cargo, informes, oficios y resultados de fiscalización.','Rutas de fiscalización electoral','Precampaña, campaña, registro de operaciones y seguimiento.'],
+    defensa:['Del acto impugnado al cumplimiento','Notificación, procedencia, agravios, sentencia y ejecución de efectos.','Documentos de defensa','Acto, pruebas, demanda, acuse, sentencia y constancias de cumplimiento.','Vías y actuaciones de defensa','Medios federales y de la entidad, más guías por documento recibido.'],
+    partido:['Cómo se integra un trámite partidista','Acto interno, autoridad, presentación, acuse y seguimiento.','Documentos del partido','Registro, nombramientos, padrón, convenios y obligaciones.','Trámites del partido','Constitución, afiliación, representación, candidaturas y prerrogativas.'],
+    extraordinaria:['De la convocatoria a los resultados','Origen de la elección, calendario propio, jornada, cómputos y cierre.','Documentos de la elección extraordinaria','Acto de origen, convocatoria y calendario por cargo y demarcación.','Ruta de una elección extraordinaria','Cómo seguir un proceso extraordinario y documentar su cierre.'],
+    judicial:['Preparación, jornada y cómputos','Ámbito, cargos, postulaciones, resultados y validez.','Documentos de la elección judicial','Convocatoria, marco judicial, candidaturas y constancias.','Rutas judiciales federal y local','Qué se revisa en cada ámbito y en qué momento.'],
+    participacion:['Cómo se sigue el ejercicio','Convocatoria, organización territorial, votación, cómputos y cierre.','Documentos de participación','Actos y resultados de consulta popular o revocación de mandato.','Ruta de consulta y revocación','Procedencia, apoyos cuando aplican, organización y resultados.'],
+    sancionadores:['Cómo se tramita una queja','Inicio, emplazamiento, pruebas, resolución y seguimiento.','Documentos del procedimiento','Acto de inicio, notificaciones, respuestas, constancias y resolución.','Vías y actuaciones de quejas','Qué hacer ante un emplazamiento, vista, audiencia o resolución.'],
+  }[topic];
+  const [routeTitle,routeText,docsTitle,docsText,detailTitle,detailText]=copy;
+  const resources={
+    anual:[
+      ['Oficios de primera y segunda vuelta','Abre cada oficio de Errores y Omisiones y el dictamen incorporado.','oficios'],
+    ],
+    organizacion:[
+      ['Normatividad local','Leyes y reglamentos de la entidad.','norm'],
+      ['OPLE y publicaciones','Autoridad local, acuerdos, estrados y acervo.','ople'],
+      ['Planes electorales','Planes, numeralia y plataformas de la entidad.','planes'],
+    ],
+    fiscalizacion:[['Consultar acuerdos y topes','Elige etapa y cargo para comparar los montos registrados.','topes']],
+    defensa:[['Sentencias y jurisprudencia','Abre los índices y carpetas disponibles en el Acervo.','exp']],
+  };
   const content = [
-    ['Ruta', [workflow,...(example?[examplePanel]:[])]],
-    ['Documentos', [element('h3','Documentos y cobertura'),note,grid]],
-    ...(routeList ? [['Rutas específicas',[routeList,catalogueLink]]] : []),
-    ['Fuentes', [official,sources]],
+    ...((resources[topic]??[]).map(([label,description,target])=>[label,description,link(target)])),
+    [routeTitle,routeText,[workflow,...(example?[examplePanel]:[])]],
+    [docsTitle,docsText,[note,grid]],
+    ...(routeList ? [[detailTitle,detailText,[routeList,catalogueLink]]] : []),
+    ['Publicaciones y fuentes oficiales','Enlaces al INE, a la autoridad local y a las referencias aplicables.',[official,sources]],
   ];
   panel.replaceChildren(renderSectionViews(content));
 }

@@ -18,10 +18,6 @@ function attachComplaintDesk(panel, state) {
   desk.setAttribute('aria-label','Seguimiento de quejas y procedimientos');
   desk.innerHTML = `
     <p class="complaint-note">Maqueta de seguimiento. Los registros se guardan en este navegador. Captura la fecha de vencimiento previamente verificada.</p>
-    <div class="complaint-switch" role="group" aria-label="Vista de seguimiento">
-      <button type="button" aria-pressed="true" data-desk="notices">Notificaciones</button>
-      <button type="button" aria-pressed="false" data-desk="calendar">Calendario de vencimientos</button>
-    </div>
     <p class="complaint-feedback" role="status"></p>
     <div data-desk-panel="notices">
       <h3 id="complaint-notices-title" tabindex="-1">Notificaciones</h3>
@@ -53,12 +49,21 @@ function attachComplaintDesk(panel, state) {
       <button type="button" class="complaint-all-days" hidden>Mostrar todo el mes</button>
       <div class="complaint-due"></div>
     </div>`;
-  const help = document.createElement('details');
-  help.className = 'complaint-guide';
-  const summary = document.createElement('summary');
-  summary.textContent = 'Guía del procedimiento y publicaciones oficiales';
-  help.append(summary, ...panel.childNodes);
-  panel.append(desk, help);
+  const guide = [...panel.childNodes];
+  const noticePanel = desk.querySelector('[data-desk-panel=notices]');
+  const calendarContent = desk.querySelector('[data-desk-panel=calendar]');
+  noticePanel.querySelector('h3').textContent='Bandeja de notificaciones';
+  calendarContent.querySelector('h3').textContent='Vencimientos por día';
+  calendarContent.hidden=false;
+  const unreadLabel=document.createElement('p');
+  unreadLabel.className='complaint-note';
+  noticePanel.prepend(unreadLabel);
+  desk.append(renderSectionViews([
+    ['Notificaciones recibidas','Consulta, registra y marca notificaciones como leídas.',[noticePanel]],
+    ['Calendario de vencimientos','Consulta las fechas capturadas y el estado de atención por día.',[calendarContent]],
+    ['Guía y documentos del procedimiento','Pasos, documentos, actuaciones ante la autoridad y publicaciones oficiales.',guide],
+  ], new URLSearchParams(location.search).get('vista')==='calendario'?1:-1));
+  panel.replaceChildren(desk);
   const notices = desk.querySelector('.complaint-notices');
   const dueList = desk.querySelector('.complaint-due');
   const form = desk.querySelector('form');
@@ -105,7 +110,7 @@ function attachComplaintDesk(panel, state) {
   }
   function renderNotices(){
     const unread = entries.filter(entry=>!entry.read).length;
-    desk.querySelector('[data-desk=notices]').textContent = unread ? 'Notificaciones ('+unread+' sin leer)' : 'Notificaciones';
+    unreadLabel.textContent = unread ? unread+' sin leer' : 'Bandeja al día';
     notices.replaceChildren();
     for(const entry of [...entries].sort((a,b)=>b.received.localeCompare(a.received))){
       notices.append(row(entry,true));
@@ -147,12 +152,6 @@ function attachComplaintDesk(panel, state) {
     if(!visible.length)dueList.append(element('p','Sin vencimientos registrados para este periodo.'));
     else for(const item of visible) dueList.append(row(item,false));
   }
-  function switchView(view,focus=true){
-    for(const button of desk.querySelectorAll('[data-desk]')) button.setAttribute('aria-pressed',String(button.dataset.desk===view));
-    for(const section of desk.querySelectorAll('[data-desk-panel]'))section.hidden=section.dataset.deskPanel!==view;
-    if(view==='calendar')renderCalendar();
-    if(focus)desk.querySelector('#complaint-'+view+'-title').focus();
-  }
   form.addEventListener('submit', event=>{
     event.preventDefault();
     const fields = new FormData(form);
@@ -173,12 +172,12 @@ function attachComplaintDesk(panel, state) {
     form.reset();
     form.closest('details').open=false;
     renderNotices();
+    renderCalendar();
     desk.querySelector('#complaint-notices-title').focus();
   });
   desk.addEventListener('click', event=>{
     const button=event.target.closest('button');
     if(!button) return;
-    if(button.dataset.desk)switchView(button.dataset.desk);
     if(button.dataset.month){
       month=new Date(month.getFullYear(),month.getMonth()+Number(button.dataset.month),1);
       selectedDay='';
@@ -201,11 +200,12 @@ function attachComplaintDesk(panel, state) {
       entry[action]=!entry[action];
       save(action==='read'?'Estado de lectura actualizado.':'Estado del vencimiento actualizado.');
       renderNotices();
+      renderCalendar();
       notices.querySelectorAll('button[data-entry]').forEach(item=>{
         if(item.dataset.entry===entry.id&&item.dataset.action===action)item.focus();
       });
     }
   });
   renderNotices();
-  switchView(new URLSearchParams(location.search).get('vista')==='calendario'?'calendar':'notices',false);
+  renderCalendar();
 }
