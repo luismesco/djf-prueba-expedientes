@@ -4,6 +4,7 @@
   const topic = query.get('tema');
   const aliases = {CAM: 'CAMP', TAM: 'TAMPS', TAMP: 'TAMPS'};
   const id = Number(Object.keys(EST).find(key => (aliases[EST[key]] ?? EST[key]) === code));
+  const processes = new Set(['anual', 'organizacion', 'fiscalizacion', 'defensa']);
   const panes = new Map([
     ['cobertura', 'b-eyo'], ['oficios', 'b-eyo'], ['primera', 'b-eyo'], ['segunda', 'b-eyo'], ['dictamen', 'b-eyo'],
     ['norm', 'b-norm'], ['ople', 'b-ople'], ['topes', 'b-topes'], ['exp', 'b-exp'], ['planes', 'b-ople'],
@@ -16,7 +17,12 @@
     return a;
   };
   const index = './index.html';
-  const topicHref = target => './consulta.html?' + new URLSearchParams({entidad: code, tema: target});
+  const from = processes.has(topic) ? topic : query.get('proceso');
+  const topicHref = target => {
+    const params = new URLSearchParams({entidad: code, tema: target});
+    if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
+    return './consulta.html?' + params;
+  };
   const setBackLinks = (back, backLabel) => {
     document.getElementById('detailBar').replaceChildren(
       sourceLink(backLabel, back), sourceLink('Volver al mapa', index),
@@ -39,18 +45,19 @@
     setBackLinks(index, 'Volver a Expedientes');
     return;
   }
-  if (!id || !panes.has(topic)) {
+  if (!id || (!panes.has(topic) && !processes.has(topic))) {
     location.replace(index);
     return;
   }
   openFicha(id, false);
-  const block = panes.get(topic);
+  const block = panes.get(topic) ?? 'b-eyo';
   goStep('detalle', block);
   const panel = document.getElementById(block);
   const caseHref = index + '?' + new URLSearchParams({entidad: code});
   const name = DATA.find(row => row.code === id).name;
-  setBackLinks(caseHref, 'Volver a las opciones de ' + name);
-  if (topic === 'cobertura') {
+  if (processes.has(from) && !processes.has(topic)) setBackLinks(topicHref(from), 'Volver al proceso');
+  else setBackLinks(caseHref, 'Volver a los procesos de ' + name);
+  if (topic === 'cobertura' || processes.has(topic)) {
     const state = DATA.find(row => row.code === id);
     renderStateCoverage(panel, {
       state,
@@ -64,8 +71,9 @@
       recentDecisions: SENT02[id],
       historicalDecisions: SENT03[id],
       link: topicHref,
-    });
-    contextTitle(name + ' · Documentos por etapa', panel);
+      code,
+    }, topic);
+    contextTitle(name + ' · ' + (processes.has(topic) ? processGuides[topic].title : 'Documentos por proceso'), panel);
   } else if (topic === 'oficios') {
     const choices = document.createElement('nav');
     choices.className = 'chips';

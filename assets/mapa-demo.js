@@ -16,7 +16,6 @@ function render(focus = false) {
     for (const link of document.querySelectorAll('[data-topic]')) {
       link.href = './consulta.html?' + new URLSearchParams({entidad: code, tema: link.dataset.topic});
     }
-    document.getElementById('demo-desk').hidden = code !== 'QROO';
   }
   if (focus) (name ? entity : document.getElementById('demo-map-title')).focus();
 }
