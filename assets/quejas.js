@@ -17,12 +17,12 @@ function attachComplaintDesk(panel, state) {
   desk.className = 'complaint-desk';
   desk.setAttribute('aria-label','Seguimiento de quejas y procedimientos');
   desk.innerHTML = `
-    <p class="complaint-note">Maqueta de seguimiento. Los registros se guardan en este navegador. Captura la fecha de vencimiento previamente verificada.</p>
     <p class="complaint-feedback" role="status"></p>
     <div data-desk-panel="notices">
       <h3 id="complaint-notices-title" tabindex="-1">Notificaciones</h3>
       <details class="complaint-editor">
         <summary>Registrar notificación</summary>
+        <p class="complaint-note">Registro de prueba en este navegador. Captura el vencimiento después de cotejarlo con la constancia.</p>
         <form class="complaint-form" autocomplete="off">
           <label>Folio<input name="folio" required maxlength="60" placeholder="DEMO-03"></label>
           <label>Asunto<input name="subject" required maxlength="120"></label>
@@ -58,10 +58,17 @@ function attachComplaintDesk(panel, state) {
   const unreadLabel=document.createElement('p');
   unreadLabel.className='complaint-note';
   noticePanel.prepend(unreadLabel);
+  const cases=document.createElement('div');
+  cases.className='complaint-cases';
+  const references=document.createElement('details');
+  references.className='process-reference';
+  const summary=document.createElement('summary');
+  summary.textContent='Referencias del procedimiento';
+  references.append(summary,...guide);
   desk.append(renderSectionViews([
-    ['Notificaciones recibidas','Consulta, registra y marca notificaciones como leídas.',[noticePanel],'inbox'],
-    ['Calendario de vencimientos','Consulta las fechas capturadas y el estado de atención por día.',[calendarContent],'calendar'],
-    ['Guía y documentos del procedimiento','Pasos, documentos, actuaciones ante la autoridad y publicaciones oficiales.',guide,'sources'],
+    ['Notificaciones','Folio, fecha de recepción, constancia y estado de lectura.',[noticePanel],'inbox'],
+    ['Plazos y vencimientos','Calendario, hora registrada y estado de atención.',[calendarContent],'calendar'],
+    ['Expedientes y actuaciones','Actuaciones por folio con su constancia y vencimiento registrado.',[cases,references],'file'],
   ], new URLSearchParams(location.search).get('vista')==='calendario'?1:-1));
   panel.replaceChildren(desk);
   const notices = desk.querySelector('.complaint-notices');
@@ -112,8 +119,19 @@ function attachComplaintDesk(panel, state) {
     const unread = entries.filter(entry=>!entry.read).length;
     unreadLabel.textContent = unread ? unread+' sin leer' : 'Bandeja al día';
     notices.replaceChildren();
+    const files=new Map();
     for(const entry of [...entries].sort((a,b)=>b.received.localeCompare(a.received))){
       notices.append(row(entry,true));
+      if(!files.has(entry.folio))files.set(entry.folio,[]);
+      files.get(entry.folio).push(entry);
+    }
+    cases.replaceChildren(element('p','Actuaciones registradas en este navegador.'));
+    for(const [folio,records] of files){
+      const file=element('details');
+      file.className='process-route';
+      file.append(element('summary',folio+' · '+records.length+(records.length===1?' actuación':' actuaciones')));
+      for(const record of records)file.append(row(record,false));
+      cases.append(file);
     }
   }
   function renderCalendar(){

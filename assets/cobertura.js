@@ -230,13 +230,6 @@ function renderStateCoverage(panel, data, topic) {
       steps.append(step);
     }
     workflow.append(steps, element('h3', 'Resultado del proceso'), element('p', guide.outcome));
-    if (topic === 'anual') {
-      if (data.code === 'QROO') {
-        const deskLink = element('a', 'Abrir Mesa de análisis de muestra');
-        deskLink.href = './mesa.html';
-        workflow.append(deskLink);
-      }
-    }
   }
   const example = processExamples[topic];
   const examplePanel = element('section', '', 'coverage-example');
@@ -252,7 +245,7 @@ function renderStateCoverage(panel, data, topic) {
     examplePanel.append(list);
   }
   const grid = element('div', '', 'coverage-grid');
-  for (const [title, entries] of sections[topic] ?? rows) {
+  function documentSection(title, entries) {
     const section = element('section', '', 'coverage-stage');
     section.append(element('h3', title));
     const list = element('ul');
@@ -267,8 +260,9 @@ function renderStateCoverage(panel, data, topic) {
       list.append(item);
     }
     section.append(list);
-    grid.append(section);
+    return section;
   }
+  for (const [title, entries] of sections[topic] ?? rows) grid.append(documentSection(title, entries));
   const sources = element('div', '', 'coverage-sources');
   for (const [title, url] of (guide ? (guide.sources ?? []) : [
     ['INE · Calendario y etapas locales', 'https://ine.mx/voto-y-elecciones/elecciones-locales-2026/elecciones-locales-2026-etapas/'],
@@ -302,8 +296,34 @@ function renderStateCoverage(panel, data, topic) {
   const routeList = renderProcessRoutes(topic,data.code);
   const catalogueLink = element('a','Abrir catálogo completo');
   catalogueLink.href = link('catalogo');
+  if (topic === 'anual') {
+    const [report,,,decision,resolution]=rows[4][1];
+    const docs=documentSection('Documentación del sujeto obligado', [
+      report,
+      ['Respuesta y anexos de primera vuelta',pending,'Respuesta presentada, acuse y correspondencia de anexos por numeral.'],
+      ['Respuesta y anexos de segunda vuelta',pending,'Respuesta presentada, acuse y anexos asociados a los numerales de la segunda vuelta.'],
+    ]);
+    const references=element('details','','process-reference');
+    references.append(element('summary','Referencias de la revisión anual'),workflow,routeList,catalogueLink,official,sources);
+    const reconciliation=element('section','','annual-reconciliation');
+    reconciliation.append(
+      element('p','Cruza evidencia y respuesta con la valoración de la UTF. Identifica por separado el monto observado, el residual y la determinación de la resolución.'),
+      ...(example?[examplePanel]:[]),
+    );
+    if(data.code==='QROO'){
+      const mesa=element('a','Abrir Mesa de análisis de Quintana Roo · muestra');
+      mesa.href='./mesa.html';
+      reconciliation.prepend(mesa);
+    }
+    panel.replaceChildren(renderSectionViews([
+      ['Oficios de Errores y Omisiones','Primera y segunda vuelta del Informe Anual 2025.',link('oficios'),'file'],
+      ['Informe, respuestas y anexos','Acuses y evidencia del sujeto obligado por vuelta.',[docs],'tree'],
+      ['Dictamen y resolución','Conclusiones, determinaciones y constancias pendientes de cotejo.',[documentSection('Determinaciones de la autoridad',[decision,resolution])],'law'],
+      ['Cotejo por numeral y conclusión','Observación, respuesta, prueba, valoración y consecuencia.',[reconciliation],'check'],
+    ]),references);
+    return;
+  }
   const copy = {
-    anual:['Pasos de la revisión anual','Del informe y su acuse a las respuestas, el dictamen y la resolución.','Cobertura del informe anual','Oficios, respuestas, anexos y determinaciones disponibles o por cotejar.','Ruta por documento recibido','Qué hacer con un oficio, una notificación, un dictamen o una resolución.'],
     organizacion:['Calendario y etapas de la elección','Preparación, registros, jornada, cómputos y declaración de validez.','Documentos de la elección','Marco local, OPLE, plan, candidaturas y constancias de resultados.','Cargos y medios locales','Secuencia por cargo y vías de defensa que corresponde cotejar en la entidad.'],
     fiscalizacion:['Cómo se revisan los gastos','Tope aplicable, comprobantes, informe, requerimientos y determinación.','Topes e informes por etapa','Acuerdos y montos por cargo, informes, oficios y resultados de fiscalización.','Rutas de fiscalización electoral','Precampaña, campaña, registro de operaciones y seguimiento.'],
     defensa:['Del acto impugnado al cumplimiento','Notificación, procedencia, agravios, sentencia y ejecución de efectos.','Documentos de defensa','Acto, pruebas, demanda, acuse, sentencia y constancias de cumplimiento.','Vías y actuaciones de defensa','Medios federales y de la entidad, más guías por documento recibido.'],
@@ -315,9 +335,6 @@ function renderStateCoverage(panel, data, topic) {
   }[topic];
   const [routeTitle,routeText,docsTitle,docsText,detailTitle,detailText]=copy;
   const resources={
-    anual:[
-      ['Oficios de primera y segunda vuelta','Abre cada oficio de Errores y Omisiones y el dictamen incorporado.','oficios','file'],
-    ],
     organizacion:[
       ['Normatividad local','Leyes y reglamentos de la entidad.','norm','law'],
       ['OPLE y publicaciones','Autoridad local, acuerdos, estrados y acervo.','ople','institution'],
