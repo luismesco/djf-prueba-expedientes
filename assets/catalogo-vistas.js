@@ -11,6 +11,39 @@ function processSource(title,href) {
   link.rel='noopener';
   return link;
 }
+const processCardIcons = {
+  route:'M5 5h6m5 14h3M5 5v7h14v7M9 8l3-3-3-3m7 14 3 3-3 3',
+  file:'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6m-6 4h6',
+  tree:'M6 3h5v5H6zM3 16h5v5H3zM16 16h5v5h-5zM8 8v4h11v4m-13-4v4',
+  sources:'M12 6C9 4 6 4 3 5v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zm0 0v14',
+  calendar:'M4 6h16v15H4zM8 3v5m8-5v5M4 10h16m-12 4h3m2 3h3',
+  law:'M12 4v15M5 7h14M6 7l-3 6h6L6 7zm12 0-3 6h6l-3-6zM8 21h8',
+  institution:'M3 9l9-5 9 5M5 10h14M7 10v8m5-8v8m5-8v8M4 20h16',
+  map:'M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15',
+  search:'M15.5 15.5l4 4M10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13Z',
+  inbox:'M4 6h16l2 9v5H2v-5z M2 15h6l2 2h4l2-2h6',
+  limits:'M4 20V4m0 16h16M8 15l4-4 3 2 5-6M16 7h4v4',
+  first:'M6 3h8l4 4v14H6zM14 3v5h4m-8 5 2-2v6m-2 0h4',
+  second:'M6 3h8l4 4v14H6zM14 3v5h4m-8 4a2 2 0 1 1 3 2l-3 3h4',
+  check:'M6 3h8l4 4v14H6zM14 3v5h4m-9 6 2 2 4-4',
+};
+function processCardIcon(name) {
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  const path=document.createElementNS(ns,'path');
+  svg.setAttribute('viewBox','0 0 24 24');
+  svg.setAttribute('class','process-card-icon');
+  svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('focusable','false');
+  path.setAttribute('d',processCardIcons[name]);
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke','currentColor');
+  path.setAttribute('stroke-width','1.65');
+  path.setAttribute('stroke-linecap','round');
+  path.setAttribute('stroke-linejoin','round');
+  svg.append(path);
+  return svg;
+}
 function renderSectionViews(views, initial = -1) {
   const root=processElement('div','','process-views');
   const menu=processElement('div','','process-card-menu');
@@ -20,9 +53,9 @@ function renderSectionViews(views, initial = -1) {
   back.type='button';
   root.append(menu,back);
   let active=-1;
-  const content=views.map(([label,description,children],index)=>{
+  const content=views.map(([label,description,children,icon],index)=>{
     const card=processElement(typeof children==='string'?'a':'button','','process-card');
-    card.append(processElement('strong',label),processElement('span',description));
+    card.append(processCardIcon(icon),processElement('strong',label),processElement('span',description));
     menu.append(card);
     if(typeof children==='string'){
       card.href=children;
@@ -141,7 +174,7 @@ function renderProcessCatalogue(panel,code) {
     status.textContent=query?matches+' resultados':'';
   });
   panel.replaceChildren(info,note,renderSectionViews([
-    ['Buscador de procesos y actuaciones','57 rutas y 14 guías por documento recibido.',[label,input,status,list]],
-    ['Cargos y medios de la entidad','Secuencias por elección, vías locales por cotejar y referencias estatales.',[renderLocalProcessRoutes(code)]],
+    ['Buscador de procesos y actuaciones','57 rutas y 14 guías por documento recibido.',[label,input,status,list],'search'],
+    ['Cargos y medios de la entidad','Secuencias por elección, vías locales por cotejar y referencias estatales.',[renderLocalProcessRoutes(code)],'map'],
   ]));
 }

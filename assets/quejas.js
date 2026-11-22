@@ -59,9 +59,9 @@ function attachComplaintDesk(panel, state) {
   unreadLabel.className='complaint-note';
   noticePanel.prepend(unreadLabel);
   desk.append(renderSectionViews([
-    ['Notificaciones recibidas','Consulta, registra y marca notificaciones como leídas.',[noticePanel]],
-    ['Calendario de vencimientos','Consulta las fechas capturadas y el estado de atención por día.',[calendarContent]],
-    ['Guía y documentos del procedimiento','Pasos, documentos, actuaciones ante la autoridad y publicaciones oficiales.',guide],
+    ['Notificaciones recibidas','Consulta, registra y marca notificaciones como leídas.',[noticePanel],'inbox'],
+    ['Calendario de vencimientos','Consulta las fechas capturadas y el estado de atención por día.',[calendarContent],'calendar'],
+    ['Guía y documentos del procedimiento','Pasos, documentos, actuaciones ante la autoridad y publicaciones oficiales.',guide,'sources'],
   ], new URLSearchParams(location.search).get('vista')==='calendario'?1:-1));
   panel.replaceChildren(desk);
   const notices = desk.querySelector('.complaint-notices');

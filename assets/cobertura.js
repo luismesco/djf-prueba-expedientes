@@ -316,22 +316,22 @@ function renderStateCoverage(panel, data, topic) {
   const [routeTitle,routeText,docsTitle,docsText,detailTitle,detailText]=copy;
   const resources={
     anual:[
-      ['Oficios de primera y segunda vuelta','Abre cada oficio de Errores y Omisiones y el dictamen incorporado.','oficios'],
+      ['Oficios de primera y segunda vuelta','Abre cada oficio de Errores y Omisiones y el dictamen incorporado.','oficios','file'],
     ],
     organizacion:[
-      ['Normatividad local','Leyes y reglamentos de la entidad.','norm'],
-      ['OPLE y publicaciones','Autoridad local, acuerdos, estrados y acervo.','ople'],
-      ['Planes electorales','Planes, numeralia y plataformas de la entidad.','planes'],
+      ['Normatividad local','Leyes y reglamentos de la entidad.','norm','law'],
+      ['OPLE y publicaciones','Autoridad local, acuerdos, estrados y acervo.','ople','institution'],
+      ['Planes electorales','Planes, numeralia y plataformas de la entidad.','planes','calendar'],
     ],
-    fiscalizacion:[['Consultar acuerdos y topes','Elige etapa y cargo para comparar los montos registrados.','topes']],
-    defensa:[['Sentencias y jurisprudencia','Abre los índices y carpetas disponibles en el Acervo.','exp']],
+    fiscalizacion:[['Consultar acuerdos y topes','Elige etapa y cargo para comparar los montos registrados.','topes','limits']],
+    defensa:[['Sentencias y jurisprudencia','Abre los índices y carpetas disponibles en el Acervo.','exp','search']],
   };
   const content = [
-    ...((resources[topic]??[]).map(([label,description,target])=>[label,description,link(target)])),
-    [routeTitle,routeText,[workflow,...(example?[examplePanel]:[])]],
-    [docsTitle,docsText,[note,grid]],
-    ...(routeList ? [[detailTitle,detailText,[routeList,catalogueLink]]] : []),
-    ['Publicaciones y fuentes oficiales','Enlaces al INE, a la autoridad local y a las referencias aplicables.',[official,sources]],
+    ...((resources[topic]??[]).map(([label,description,target,icon])=>[label,description,link(target),icon])),
+    [routeTitle,routeText,[workflow,...(example?[examplePanel]:[])],topic==='organizacion'?'calendar':'route'],
+    [docsTitle,docsText,[note,grid],'file'],
+    ...(routeList ? [[detailTitle,detailText,[routeList,catalogueLink],topic==='defensa'?'law':topic==='organizacion'?'map':'tree']] : []),
+    ['Publicaciones y fuentes oficiales','Enlaces al INE, a la autoridad local y a las referencias aplicables.',[official,sources],'sources'],
   ];
   panel.replaceChildren(renderSectionViews(content));
 }

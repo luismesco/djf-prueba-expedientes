@@ -17,10 +17,10 @@
     a.href = href;
     return a;
   };
-  const index = './index.html?v=tarjetas-1';
+  const index = './index.html?v=iconos-1';
   const from = processes.has(topic) ? topic : query.get('proceso');
   const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target, v: 'tarjetas-1'});
+    const params = new URLSearchParams({entidad: code, tema: target, v: 'iconos-1'});
     if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
     if (embedded) params.set('panel','1');
     return './consulta.html?' + params;
@@ -82,9 +82,9 @@
     contextTitle(name + ' · ' + (processes.has(topic) ? processGuides[topic].title : 'Documentos por proceso'), panel);
   } else if (topic === 'oficios') {
     panel.replaceChildren(renderSectionViews([
-      ['Primera vuelta','Oficio inicial de la UTF para el Informe Anual 2025.',topicHref('primera')],
-      ['Segunda vuelta','Segundo oficio de la UTF para el mismo ejercicio.',topicHref('segunda')],
-      ['Dictamen consolidado','Consulta el dictamen de la entidad y su disponibilidad en el acervo.',topicHref('dictamen')],
+      ['Primera vuelta','Oficio inicial de la UTF para el Informe Anual 2025.',topicHref('primera'),'first'],
+      ['Segunda vuelta','Segundo oficio de la UTF para el mismo ejercicio.',topicHref('segunda'),'second'],
+      ['Dictamen consolidado','Consulta el dictamen de la entidad y su disponibilidad en el acervo.',topicHref('dictamen'),'check'],
     ]));
     contextTitle(name + ' · Errores y Omisiones', panel);
   } else if (['primera','segunda','dictamen'].includes(topic)) {
@@ -118,7 +118,7 @@
       const target = new URL(link.href);
       if (target.pathname.endsWith('/mesa.html')) {
         target.searchParams.set('panel','1');
-        target.searchParams.set('v','tarjetas-1');
+        target.searchParams.set('v','iconos-1');
         link.href = target.href;
       }
     }
