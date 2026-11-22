@@ -19,10 +19,15 @@
   };
   const index = djfUrl('index');
   const from = processes.has(topic) ? topic : query.get('proceso');
-  const topicHref = target => djfUrl('consulta',{
+  const previousProcess=query.get('proceso');
+  const eyoDefense=topic==='defensa' && query.get('origen')==='oficios'
+    ? eyoStages.find(([key])=>key===query.get('etapa'))
+    : null;
+  const topicHref = (target, context = {}) => djfUrl('consulta',{
     entidad:code,tema:target,
     proceso:processes.has(from)&&!processes.has(target)?from:null,
     panel:embedded?'1':null,
+    ...context,
   });
   const setBackLinks = (back, backLabel) => {
     document.getElementById('detailBar').replaceChildren(
@@ -78,12 +83,17 @@
       code,
     }, topic);
     if (topic === 'sancionadores') attachComplaintDesk(panel, code);
+    if(eyoDefense){
+      const context=processElement('p',eyoDefense[2]+' · Impugnaciones por individualizar en el acervo.','eyo-stage-note');
+      panel.prepend(context);
+      setBackLinks(djfUrl('consulta',{
+        entidad:code,tema:'oficios',etapa:eyoDefense[0],
+        proceso:processes.has(previousProcess)?previousProcess:null,panel:embedded?'1':null,
+      }), 'Volver a Errores y Omisiones');
+    }
     contextTitle(name + ' · ' + (processes.has(topic) ? processGuides[topic].title : 'Documentos por proceso'), panel);
   } else if (topic === 'oficios') {
-    panel.replaceChildren(renderSectionViews([
-      ['Primera vuelta','Oficio inicial de la UTF para el Informe Anual 2025.',topicHref('primera'),'first'],
-      ['Segunda vuelta','Segundo oficio de la UTF para el mismo ejercicio.',topicHref('segunda'),'second'],
-    ]));
+    renderEyoStages(panel,{id,initial:query.get('etapa')??(from==='fiscalizacion'?'precampana':'anual'),link:topicHref,origin:processes.has(from)?from:null});
     contextTitle(name + ' · Errores y Omisiones', panel);
   } else if (['primera','segunda','dictamen'].includes(topic)) {
     const rounds = ['primera','segunda','dictamen'];
@@ -91,7 +101,7 @@
     const rows = [...document.getElementById('eyoContent').children];
     panel.replaceChildren(rows[n*2], rows[n*2+1]);
     contextTitle(name + ' · Errores y Omisiones', panel);
-    if (topic !== 'dictamen') setBackLinks(topicHref('oficios'), 'Volver a Errores y Omisiones');
+    if (topic !== 'dictamen' || query.has('etapa')) setBackLinks(topicHref('oficios',{etapa:query.get('etapa')}), 'Volver a Errores y Omisiones');
   } else if (topic === 'planes') {
     const plans = document.getElementById('oplePlanes');
     panel.replaceChildren(plans);
@@ -104,7 +114,7 @@
     const content = document.createElement('main');
     content.id = 'djf-section-content';
     content.setAttribute('aria-label','Contenido de la sección');
-    if (!processes.has(topic)) {
+    if (!processes.has(topic) || eyoDefense) {
       const back = document.querySelector('#detailBar a');
       if (back) {
         if (!new URL(back.href).searchParams.has('panel')) back.target = '_top';

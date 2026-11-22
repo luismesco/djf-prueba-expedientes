@@ -79,7 +79,7 @@ function renderStateCoverage(panel, data, topic) {
   ];
   const fiscalInputs = ['Control de informes y revisión', [
     ['Informes y acuses', pending, 'Control de ingresos y gastos por etapa, comprobantes, pólizas, informes y constancias de envío.'],
-    ['Oficios y respuestas', pending, 'Oficios, notificaciones, respuestas y anexos del proceso electoral y etapa consultados.'],
+    ['Respuestas y anexos', pending, 'Respuesta presentada, acuse y anexos por proceso electoral y etapa.'],
     ['Dictamen y resolución de la etapa', pending, 'Dictamen, anexos, resolución, conclusiones aplicables y seguimiento o impugnación.'],
   ]];
   const sections = {
@@ -165,7 +165,7 @@ function renderStateCoverage(panel, data, topic) {
       reconciliation.prepend(mesa);
     }
     panel.replaceChildren(renderSectionViews([
-      ['Oficios de Errores y Omisiones','Primera y segunda vuelta del Informe Anual 2025.',link('oficios'),'file'],
+      ['Oficios de Errores y Omisiones','Primera y segunda vuelta del Informe Anual 2025.',link('oficios',{etapa:'anual'}),'file'],
       ['Informe, respuestas y anexos','Acuses y evidencia del sujeto obligado por vuelta.',[docs],'tree'],
       ['Dictamen y resolución','Conclusiones, determinaciones y constancias pendientes de cotejo.',[documentSection('Determinaciones de la autoridad',[decision,resolution])],'law'],
       ['Cotejo por numeral y conclusión','Observación, respuesta, prueba, valoración y consecuencia.',[reconciliation],'check'],
@@ -174,7 +174,7 @@ function renderStateCoverage(panel, data, topic) {
   }
   const copy = {
     organizacion:['Documentos de la elección','Marco local, OPLE, plan, candidaturas y constancias de resultados.','Cargos y medios locales','Secuencia por cargo y vías de defensa que corresponde cotejar en la entidad.'],
-    fiscalizacion:['Informes, oficios y resoluciones','Documentos del sujeto obligado y actuaciones de la autoridad por etapa.','Rutas de fiscalización electoral','Precampaña, campaña, registro de operaciones y seguimiento.'],
+    fiscalizacion:['Informes, respuestas y resoluciones','Documentos del sujeto obligado y determinaciones por etapa.','Rutas de fiscalización electoral','Precampaña, campaña, registro de operaciones y seguimiento.'],
     defensa:['Documentos de defensa','Acto, pruebas, demanda, acuse, sentencia y constancias de cumplimiento.','Vías y actuaciones de defensa','Medios federales y de la entidad, más guías por documento recibido.'],
     partido:['Documentos del partido','Registro, nombramientos, padrón, convenios y obligaciones.','Trámites del partido','Constitución, afiliación, representación, candidaturas y prerrogativas.'],
     extraordinaria:['Documentos de la elección extraordinaria','Acto de origen, convocatoria y calendario por cargo y demarcación.','Ruta de una elección extraordinaria','Cómo seguir un proceso extraordinario y documentar su cierre.'],
@@ -189,7 +189,10 @@ function renderStateCoverage(panel, data, topic) {
       ['OPLE y publicaciones','Autoridad local, acuerdos, estrados y acervo.','ople','institution'],
       ['Planes electorales','Planes, numeralia y plataformas de la entidad.','planes','calendar'],
     ],
-    fiscalizacion:[['Consultar acuerdos y topes','Elige etapa y cargo para comparar los montos registrados.','topes','limits']],
+    fiscalizacion:[
+      ['Consultar acuerdos y topes','Elige etapa y cargo para comparar los montos registrados.','topes','limits'],
+      ['Errores y Omisiones','Oficios de precampaña y campaña, y recursos e impugnaciones.','oficios','file'],
+    ],
     defensa:[['Sentencias y jurisprudencia','Abre los índices y carpetas disponibles en el Acervo.','exp','search']],
   };
   const direct = resources[topic]??[];
@@ -202,7 +205,7 @@ function renderStateCoverage(panel, data, topic) {
     ...(routeList ? [[detailTitle,detailText,[routeList,catalogueLink],topic==='defensa'?'law':topic==='organizacion'?'map':'tree']] : []),
   ];
   if (topic === 'fiscalizacion') {
-    panel.replaceChildren(renderSectionViews(content.slice(0,2)),
+    panel.replaceChildren(renderSectionViews(content.slice(0,direct.length+1)),
       referenceSection('Referencias de fiscalización',routeList,catalogueLink));
 
     return;
