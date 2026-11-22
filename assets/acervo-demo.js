@@ -16,10 +16,10 @@
     a.href = href;
     return a;
   };
-  const index = './index.html';
+  const index = './index.html?v=ocupaciones-1';
   const from = processes.has(topic) ? topic : query.get('proceso');
   const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target});
+    const params = new URLSearchParams({entidad: code, tema: target, v: 'ocupaciones-1'});
     if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
     return './consulta.html?' + params;
   };
@@ -53,7 +53,7 @@
   const block = panes.get(topic) ?? 'b-eyo';
   goStep('detalle', block);
   const panel = document.getElementById(block);
-  const caseHref = index + '?' + new URLSearchParams({entidad: code});
+  const caseHref = index + '&' + new URLSearchParams({entidad: code});
   const name = DATA.find(row => row.code === id).name;
   if (processes.has(from) && !processes.has(topic)) setBackLinks(topicHref(from), 'Volver al proceso');
   else setBackLinks(caseHref, 'Volver a los procesos de ' + name);
