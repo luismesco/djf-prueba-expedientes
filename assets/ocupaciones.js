@@ -66,24 +66,7 @@
     host.append(controls);
   }
   groups.forEach(group=>actions(group.querySelector('.work-group-head'),group.dataset.group,group.querySelector('h4').textContent,true));
-  cards.forEach((card,id)=>{
-    actions(card,id,card.querySelector('strong').textContent);
-    const preview = document.createElement('details');
-    preview.className = 'work-preview';
-    preview.name = 'work-preview';
-    const title = card.querySelector('strong').textContent;
-    const summary = document.createElement('summary');
-    summary.textContent = 'Ver contenido';
-    summary.setAttribute('aria-label','Ver contenido de '+title);
-    const list = document.createElement('ul');
-    for(const text of workPreviews[id]){
-      const item = document.createElement('li');
-      item.textContent = text;
-      list.append(item);
-    }
-    preview.append(summary,list);
-    card.append(preview);
-  });
+  cards.forEach((card,id)=>actions(card,id,card.querySelector('strong').textContent));
 
   function updateMoves(controls, index, count) {
     // Keep boundary controls focusable so reordering preserves the user's focus.
