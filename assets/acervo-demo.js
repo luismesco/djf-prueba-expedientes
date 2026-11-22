@@ -17,10 +17,10 @@
     a.href = href;
     return a;
   };
-  const index = './index.html?v=mesa-juridica-1';
+  const index = './index.html?v=atencion-1';
   const from = processes.has(topic) ? topic : query.get('proceso');
   const topicHref = target => {
-    const params = new URLSearchParams({entidad: code, tema: target, v: 'mesa-juridica-1'});
+    const params = new URLSearchParams({entidad: code, tema: target, v: 'atencion-1'});
     if (processes.has(from) && !processes.has(target)) params.set('proceso', from);
     if (embedded) params.set('panel','1');
     return './consulta.html?' + params;
@@ -117,7 +117,7 @@
       const target = new URL(link.href);
       if (target.pathname.endsWith('/mesa.html')) {
         target.searchParams.set('panel','1');
-        target.searchParams.set('v','mesa-juridica-1');
+        target.searchParams.set('v','atencion-1');
         link.href = target.href;
       }
     }
