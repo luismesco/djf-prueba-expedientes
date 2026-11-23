@@ -78,40 +78,62 @@ function addProcessStages(view,topic,link) {
   const current=new URLSearchParams(location.search).get('fase');
   const overview=['','Todas las etapas','',cards.map((_,i)=>i)];
   const options=[...stages,overview];
-  const panel=processElement('div','','process-stage-panel');
-  panel.id='process-stage-panel-'+topic;
+  const change=processElement('button','','process-stage-change');
+  change.type='button';
+  change.setAttribute('aria-haspopup','dialog');
   const context=processElement('section','','process-stage-context');
   menu.before(section);
-  panel.append(context,menu);
-  const rows=new Map();
-  for(const [key,label] of options){
-    const row=processElement('div','','process-stage-row');
-    const heading=processElement('h3');
-    const button=processElement('button',label,'process-stage-toggle');
-    button.type='button';
-    button.addEventListener('click',()=>{
-      if(button.getAttribute('aria-expanded')==='true')return;
-      const url=new URL(location.href);
-      url.searchParams.set('fase',key);
-      history.replaceState(history.state,'',url);
-      show(key);
-      button.scrollIntoView({block:'nearest'});
-    });
-    heading.append(button);
-    row.append(heading);
-    section.append(row);
-    rows.set(key,{row,button});
-  }
+  section.append(change,context);
+  let activeKey;
+  change.addEventListener('click',()=>{
+    const host=window.frameElement?.id==='work-section-frame'?window.parent.document:document;
+    const sheet=host.createElement('dialog');
+    sheet.className='process-stage-sheet';
+    sheet.setAttribute('aria-label','Cambiar etapa');
+    const header=host.createElement('header');
+    const title=host.createElement('h2');
+    title.textContent='Cambiar etapa';
+    const close=host.createElement('button');
+    close.type='button';
+    close.textContent='Cerrar';
+    close.addEventListener('click',()=>sheet.close());
+    header.append(title,close);
+    const list=host.createElement('div');
+    list.className='process-stage-list';
+    for(const [key,label] of options){
+      const choice=host.createElement('button');
+      choice.type='button';
+      choice.textContent=label;
+      if(key===activeKey){
+        choice.setAttribute('aria-current','true');
+        choice.autofocus=true;
+      }
+      choice.addEventListener('click',()=>{
+        const url=new URL(location.href);
+        url.searchParams.set('fase',key);
+        history.replaceState(history.state,'',url);
+        show(key);
+        sheet.close();
+      });
+      list.append(choice);
+    }
+    sheet.append(header,list);
+    host.body.append(sheet);
+    const removeSheet=()=>sheet.remove();
+    window.addEventListener('pagehide',removeSheet,{once:true});
+    sheet.addEventListener('close',()=>{
+      window.removeEventListener('pagehide',removeSheet);
+      removeSheet();
+      change.focus({preventScroll:true});
+    },{once:true});
+    sheet.showModal();
+  });
   function show(key){
     const [phase,label,summary,visible,related]=options.find(([phase])=>phase===key)??overview;
     key=phase;
-    for(const [value,{button}] of rows){
-      const expanded=value===key;
-      button.setAttribute('aria-expanded',String(expanded));
-      button.setAttribute('aria-disabled',String(expanded));
-      button.setAttribute('aria-controls',panel.id);
-    }
-    rows.get(key).row.append(panel);
+    activeKey=key;
+    change.replaceChildren(processElement('strong',label),processElement('span','Cambiar etapa'));
+    change.setAttribute('aria-label',label+' · Cambiar etapa');
     announceToolContext(topic,summary?label:'',summary?key:'');
     context.hidden=!summary;
     context.replaceChildren();
