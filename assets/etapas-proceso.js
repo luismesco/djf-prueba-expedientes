@@ -72,57 +72,47 @@ function addProcessStages(view,topic,link) {
   const menu=view.querySelector(':scope > .process-card-menu');
   const cards=[...menu.querySelectorAll(':scope > .process-card')];
   const destinations=cards.map(card=>card.getAttribute('href'));
-  const controls=processElement('div','','process-stage-selector');
-  controls.setAttribute('role','group');
-  controls.setAttribute('aria-label','Etapas del proceso');
-  const context=processElement('section','','process-stage-context');
-  const current=new URLSearchParams(location.search).get('fase');
-  const options=[['','Todas las etapas','',cards.map((_,i)=>i)],...stages];
-  const select=processElement('select');
-  select.setAttribute('aria-label','Etapa activa');
-  for(const [key,label] of options){
-    const option=processElement('option',label);
-    option.value=key;
-    select.append(option);
-  }
-  function activate(key){
-    const url=new URL(location.href);
-    if(key)url.searchParams.set('fase',key);
-    else url.searchParams.delete('fase');
-    history.replaceState(history.state,'',url);
-    show(key);
-  }
-  function arrow(label,path,step){
-    const button=processElement('button');
-    button.type='button';
-    button.setAttribute('aria-label',label);
-    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="'+path+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    button.addEventListener('click',()=>{
-      if(button.getAttribute('aria-disabled')==='true')return;
-      activate(options[select.selectedIndex+step][0]);
-    });
-    return button;
-  }
-  const previous=arrow('Etapa anterior','m15 6-6 6 6 6',-1);
-  const next=arrow('Etapa siguiente','m9 6 6 6-6 6',1);
-  select.addEventListener('change',()=>activate(select.value));
-  controls.append(previous,select,next);
-  const status=processElement('span','','process-stage-status');
-  status.setAttribute('role','status');
-  controls.append(status);
   const section=processElement('section','','process-stages');
-  section.setAttribute('aria-label','Atención por etapa');
+  section.setAttribute('aria-label','Etapas del proceso');
   section.hidden=menu.hidden;
-  section.append(controls,context);
+  const current=new URLSearchParams(location.search).get('fase');
+  const overview=['','Todas las etapas','',cards.map((_,i)=>i)];
+  const options=[...stages,overview];
+  const panel=processElement('div','','process-stage-panel');
+  panel.id='process-stage-panel-'+topic;
+  const context=processElement('section','','process-stage-context');
   menu.before(section);
+  panel.append(context,menu);
+  const rows=new Map();
+  for(const [key,label] of options){
+    const row=processElement('div','','process-stage-row');
+    const heading=processElement('h3');
+    const button=processElement('button',label,'process-stage-toggle');
+    button.type='button';
+    button.addEventListener('click',()=>{
+      const next=button.getAttribute('aria-expanded')==='true'?'':key;
+      const url=new URL(location.href);
+      if(next)url.searchParams.set('fase',next);
+      else url.searchParams.delete('fase');
+      history.replaceState(history.state,'',url);
+      show(next);
+      button.scrollIntoView({block:'nearest'});
+    });
+    heading.append(button);
+    row.append(heading);
+    section.append(row);
+    rows.set(key,{row,button});
+  }
   function show(key){
-    const index=Math.max(options.findIndex(([phase])=>phase===key),0);
-    const [phase,label,summary,visible,related]=options[index];
+    const [phase,label,summary,visible,related]=options.find(([phase])=>phase===key)??overview;
     key=phase;
-    select.selectedIndex=index;
-    previous.setAttribute('aria-disabled',String(index<=1));
-    next.setAttribute('aria-disabled',String(index===options.length-1));
-    status.textContent=label;
+    for(const [value,{button}] of rows){
+      const expanded=value===key;
+      button.setAttribute('aria-expanded',String(expanded));
+      if(expanded)button.setAttribute('aria-controls',panel.id);
+      else button.removeAttribute('aria-controls');
+    }
+    rows.get(key).row.append(panel);
     announceToolContext(topic,summary?label:'',summary?key:'');
     context.hidden=!summary;
     context.replaceChildren();
@@ -149,6 +139,6 @@ function addProcessStages(view,topic,link) {
       card.href=url.href;
     });
   }
-  show(current);
+  show(current??stages[0][0]);
   return view;
 }

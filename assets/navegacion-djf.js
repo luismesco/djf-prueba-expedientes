@@ -1,5 +1,5 @@
 function djfUrl(page, parameters = {}) {
-  const query = new URLSearchParams({v:'selector-etapas-1'});
+  const query = new URLSearchParams({v:'acordeon-etapas-1'});
   for (const [key, value] of Object.entries(parameters)) {
     if (value !== null && value !== undefined && value !== '') query.set(key,value);
   }
