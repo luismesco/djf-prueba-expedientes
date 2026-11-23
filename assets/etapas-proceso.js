@@ -90,12 +90,11 @@ function addProcessStages(view,topic,link) {
     const button=processElement('button',label,'process-stage-toggle');
     button.type='button';
     button.addEventListener('click',()=>{
-      const next=button.getAttribute('aria-expanded')==='true'?'':key;
+      if(button.getAttribute('aria-expanded')==='true')return;
       const url=new URL(location.href);
-      if(next)url.searchParams.set('fase',next);
-      else url.searchParams.delete('fase');
+      url.searchParams.set('fase',key);
       history.replaceState(history.state,'',url);
-      show(next);
+      show(key);
       button.scrollIntoView({block:'nearest'});
     });
     heading.append(button);
@@ -109,8 +108,8 @@ function addProcessStages(view,topic,link) {
     for(const [value,{button}] of rows){
       const expanded=value===key;
       button.setAttribute('aria-expanded',String(expanded));
-      if(expanded)button.setAttribute('aria-controls',panel.id);
-      else button.removeAttribute('aria-controls');
+      button.setAttribute('aria-disabled',String(expanded));
+      button.setAttribute('aria-controls',panel.id);
     }
     rows.get(key).row.append(panel);
     announceToolContext(topic,summary?label:'',summary?key:'');
