@@ -1,16 +1,10 @@
 function attachComplaintDesk(panel, state, link) {
-  const key = 'djf-quejas-demo-v1:' + state;
+  const key = djfNoticeKey(state);
   const today = new Date();
   const iso = date => [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
   const localDate = date => new Date(date+'T12:00:00');
   const format = date => date ? localDate(date).toLocaleDateString('es-MX', {day:'numeric',month:'long',year:'numeric'}) : '';
-  const addDays = count => iso(new Date(today.getFullYear(),today.getMonth(),today.getDate()+count));
-  let entries;
-  try { entries = JSON.parse(localStorage.getItem(key)); } catch { entries = null; }
-  if (!Array.isArray(entries)) entries = [
-    {id:'muestra-1',folio:'DEMO-01',subject:'Requerimiento de información',received:addDays(0),due:addDays(3),time:'18:00',read:false,done:false,source:'Fecha de muestra'},
-    {id:'muestra-2',folio:'DEMO-02',subject:'Acuerdo de trámite',received:addDays(-1),due:'',time:'',read:false,done:false,source:'Notificación de muestra'},
-  ];
+  const entries=djfNotices(state);
   let month = new Date(today.getFullYear(),today.getMonth(),1);
   let selectedDay = '';
   const desk = document.createElement('section');
@@ -65,11 +59,12 @@ function attachComplaintDesk(panel, state, link) {
   const summary=document.createElement('summary');
   summary.textContent='Referencias del procedimiento';
   references.append(summary,...guide);
+  const openingView=new URLSearchParams(location.search).get('vista');
   desk.append(addProcessStages(renderSectionViews([
     ['Notificaciones','Folio, fecha de recepción, constancia y estado de lectura.',[noticePanel],'inbox'],
     ['Plazos y vencimientos','Calendario, hora registrada y estado de atención.',[calendarContent],'calendar'],
     ['Expedientes y actuaciones','Actuaciones por folio con su constancia y vencimiento registrado.',[cases,references],'file'],
-  ], new URLSearchParams(location.search).get('vista')==='calendario'?1:-1),'sancionadores',link));
+  ], openingView==='calendario'?1:openingView==='notificaciones'?0:-1),'sancionadores',link));
   panel.replaceChildren(desk);
   const notices = desk.querySelector('.complaint-notices');
   const dueList = desk.querySelector('.complaint-due');

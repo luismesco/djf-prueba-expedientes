@@ -29,9 +29,11 @@
     active = id;
     const link = card.querySelector('a[data-topic]');
     const target = new URL(link.href);
+    if(id==='sancionadores'&&url.searchParams.get('vista')==='notificaciones')target.searchParams.set('vista','notificaciones');
     full.href = target.href;
     target.searchParams.set('panel','1');
     url.searchParams.delete('seccion');
+    url.searchParams.delete('vista');
     close.href = url.href;
     heading.textContent = card.querySelector('strong').textContent;
     frame.title = heading.textContent + ' · ' + document.getElementById('demo-entity').textContent;
@@ -48,6 +50,7 @@
   }
   function select(id) {
     const url = new URL(location.href);
+    url.searchParams.delete('vista');
     if (id) url.searchParams.set('seccion',id);
     else url.searchParams.delete('seccion');
     history.pushState(null,'',url);

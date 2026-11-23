@@ -219,7 +219,7 @@
         row.append(action(label,href),el('p',description));
         links.append(row);
       }
-      pane.append(links,action('Banco de formatos DJF',djf+'/atlas/banco-formatos'),action('Catálogo de procesos',legalUrl('catalogo'),false));
+      pane.append(action('Abrir Acervo electoral en Drive','https://drive.google.com/drive/folders/1mOoV3PmfIzDbmzyqqnctWS16qi3LDQES'),links,action('Banco de formatos DJF',djf+'/atlas/banco-formatos'),action('Catálogo de procesos',legalUrl('catalogo'),false));
     }
     if(forms[key]){
       const holder=el('div');
